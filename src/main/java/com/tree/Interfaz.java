@@ -152,7 +152,7 @@ public class Interfaz extends JFrame
             // Obtener el nodo seleccionado
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 
-            if (selectedNode != null) 
+            if (selectedNode != null && selectedNode.getUserObject() != null) 
             {
 
                 // Cerrar formularios existentes antes de abrir uno nuevo
