@@ -32,6 +32,9 @@ public class Database
             throw e;
         }
     }
+
+
+    
   
     public List<String> findNodesParents() 
     {
@@ -91,7 +94,6 @@ public class Database
     {
         String alertName = "";
 
-
         int id = Integer.parseInt(nodoArbolId);
 
         try
@@ -105,12 +107,11 @@ public class Database
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
 
-            
             while (resultSet.next()) 
             {
                 // Supongamos que la tabla "alertas" tiene una columna llamada "alertaNombre"
                 alertName = resultSet.getString("tipoNodo");
-                System.out.println("funciono po " + alertName);
+                System.out.println("Se detecto nodo de tipo " + alertName);
             }
 
         }
@@ -123,5 +124,93 @@ public class Database
 
 
     }
+
+    public List<String> getDataForNodoArbol(int nodoArbolId) 
+    {
+        String tipoNodo = null;
+        Integer causaId = null;
+        List<String> arrayNodoInformation = new ArrayList<>();
+    
+        try {
+            // Query para confirmar tipo de nodo
+            String query = "SELECT tipoNodo, causaId FROM nodoArbol WHERE nodoArbolId = ?";
+            
+            // Queries para obtener información específica
+            String activosQuery = "SELECT * FROM activos WHERE activoId = ?";
+            String variablesQuery = "SELECT * FROM variablesContexto WHERE VariableId = ?";
+            String sentenciasQuery = "SELECT * FROM sentencias WHERE sentenciaId = ?";
+    
+            // Establecer conexión
+            Connection connection = DriverManager.getConnection(url);
+    
+            // Preparar consulta inicial
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, nodoArbolId);
+            ResultSet resultSet = statement.executeQuery();
+    
+            // Obtener tipoNodo y causaId
+            if (resultSet.next()) {
+                tipoNodo = resultSet.getString("tipoNodo");
+                causaId = resultSet.getInt("causaId");
+            } else {
+                System.out.println("Nodo no encontrado para nodoArbolId: " + nodoArbolId);
+                return arrayNodoInformation;
+            }
+    
+            // Preparar consultas específicas
+            PreparedStatement detailStatement = null;
+    
+            switch (tipoNodo) {
+                case "activos":
+                case "Nodo de activos":
+                    detailStatement = connection.prepareStatement(activosQuery);
+                    detailStatement.setInt(1, causaId);
+                    break;
+    
+                case "variables":
+                case "Nodo de variables":
+                    detailStatement = connection.prepareStatement(variablesQuery);
+                    detailStatement.setInt(1, causaId);
+                    break;
+    
+                case "sentencias":
+                case "Nodo de sentencias":
+                    detailStatement = connection.prepareStatement(sentenciasQuery);
+                    detailStatement.setInt(1, causaId);
+                    break;
+    
+                default:
+                    System.out.println("Tipo de nodo desconocido: " + tipoNodo);
+                    return arrayNodoInformation;
+            }
+    
+            // Ejecutar consulta específica y llenar el array
+            if (detailStatement != null) {
+                resultSet = detailStatement.executeQuery();
+                System.out.println(resultSet  + "paso por el resulset");
+                while (resultSet.next()) {
+                    int columnCount = resultSet.getMetaData().getColumnCount();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = resultSet.getMetaData().getColumnLabel(i);
+                        String columnValue = resultSet.getString(i);
+                        arrayNodoInformation.add(columnValue);
+                    }
+                }
+                detailStatement.close();
+            }
+    
+            // Cerrar conexiones
+            resultSet.close();
+            statement.close();
+            connection.close();
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return arrayNodoInformation;
+    }
+    
+    
 
 }

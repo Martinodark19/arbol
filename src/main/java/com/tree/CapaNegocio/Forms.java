@@ -3,8 +3,10 @@ package com.tree.CapaNegocio;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -12,163 +14,153 @@ import javax.swing.JTextField;
 public class Forms extends JFrame 
 {
 
+    //Variable enlace form
+    private JComboBox<String> comboTipoNodo;        // Selección del tipo de nodo
+    private JComboBox<String> comboTipoExpresion;  // Selección del tipo de expresión
+    private JComboBox<String> comboOpcionTF;       // Selección de opción T/F
+    private JButton btnGuardar;                    // Botón de guardar
+
+
     // Variables formulario Activo
-    private JTextField txtActivoIdA;
-    private JTextField txtNombreA;
-    private JTextField txtClienteIdA;
-    private JTextField txtOperacionIdA;
-    private JTextField txtSitioIdA;
-    private JTextField txtProcesoIdA;
-    private JTextField txtTipoA;
-    private JTextField txtEstadoA;
-    private JTextField txtMonitorA;
-    private JTextField txtDocEstadoA;
-    private JTextField txtOperacionIdOperacionesA;
-    private JTextField txtSitioIdSitiosA;
-    private JButton btnGuardarA;
+    private JComboBox<String> comboTipo;      // Lista desplegable para tipo
+    private JComboBox<String> comboEstado;   // Lista desplegable para estado
+    private JComboBox<String> comboMonitor;  // Lista desplegable para monitor (T/F)
+    private JButton btnGuardarA;              // Botón de guardar
+
 
     // Variables formulario VariablesContexto
-    private JTextField txtVariableIdVC;
-    private JTextField txtNombreVC;
-    private JTextField txtComponenteIdVC;
     private JTextField txtTipoVC;
-    private JTextField txtLargoVC;
-    private JTextField txtValorEnteroVC;
-    private JTextField txtValorRealVC;
-    private JTextField txtVectorEnteroVC;
-    private JTextField txtVectorStringVC;
-    private JTextField txtLocalizacionIdVC;
-    private JTextField txtActiviIdVC;
-    private JTextField txtLocalizacionIdLocalizacionVC;
-    private JTextField txtAsociacionIdVC;
-    private JTextField txtValorStringVC;
-    private JTextField txtAsociacionIdAsociacionesVC;
-    private JTextField txtComponenteIdComponentesActivosVC;
-    private JTextField txtExpresionIdExpresionesVC;
+    private JComboBox<String> txtActivoId;
     private JButton btnGuardarVC;
 
     // Variables formulario Sentencias
-    private JTextField txtSentenciaIdS;
-    private JTextField txtNombreS;
-    private JTextField txtQueryS;
     private JTextField txtEstadoS;
-    private JTextField txtFechaAprobacionS;
-    private JTextField txtAlertaIdAlertasDefinicionS;
     private JButton btnGuardarS;
 
-    public void activoForm() 
+
+    public void enlaceForm(List<String> informationActivosToShow) 
     {
-        if (getContentPane().getComponentCount() > 0) 
-        {
+        if (getContentPane().getComponentCount() > 0) {
             // Si ya hay componentes en el formulario, no volver a añadirlos
             return;
         }
 
-        setTitle("Formulario Activo");
+        setTitle("Formulario Nodo de Enlace");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 400);
-        setLayout(new GridLayout(13, 2, 5, 5));
+        setSize(400, 300);
+        setLayout(new GridLayout(4, 2, 5, 5)); // Formato de filas y columnas
 
         // Inicializar componentes
-        txtActivoIdA = new JTextField();
-        txtNombreA = new JTextField();
-        txtClienteIdA = new JTextField();
-        txtOperacionIdA = new JTextField();
-        txtSitioIdA = new JTextField();
-        txtProcesoIdA = new JTextField();
-        txtTipoA = new JTextField();
-        txtEstadoA = new JTextField();
-        txtMonitorA = new JTextField();
-        txtDocEstadoA = new JTextField();
-        txtOperacionIdOperacionesA = new JTextField();
-        txtSitioIdSitiosA = new JTextField();
-        btnGuardarA = new JButton("Guardar");
+        comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
+        comboTipoExpresion = new JComboBox<>(new String[]{"Boolean", "Aritmética"});
+        comboOpcionTF = new JComboBox<>(new String[]{"T", "F"});
+        btnGuardar = new JButton("Guardar");
 
         // Añadir etiquetas y campos al formulario
-        add(new JLabel("Activo ID:"));
-        add(txtActivoIdA);
+        add(new JLabel("Tipo de Nodo:"));
+        add(comboTipoNodo);
 
-        add(new JLabel("Nombre:"));
-        add(txtNombreA);
+        add(new JLabel("Tipo de Expresión:"));
+        add(comboTipoExpresion);
 
-        add(new JLabel("Cliente ID:"));
-        add(txtClienteIdA);
+        add(new JLabel("Opción (T/F):"));
+        add(comboOpcionTF);
 
-        add(new JLabel("Operacion ID:"));
-        add(txtOperacionIdA);
-
-        add(new JLabel("Sitio ID:"));
-        add(txtSitioIdA);
-
-        add(new JLabel("Proceso ID:"));
-        add(txtProcesoIdA);
-
-        add(new JLabel("Tipo:"));
-        add(txtTipoA);
-
-        add(new JLabel("Estado:"));
-        add(txtEstadoA);
-
-        add(new JLabel("Monitor (T/F):"));
-        add(txtMonitorA);
-
-        add(new JLabel("Doc Estado:"));
-        add(txtDocEstadoA);
-
-        add(new JLabel("Operacion ID Operaciones:"));
-        add(txtOperacionIdOperacionesA);
-
-        add(new JLabel("Sitio ID Sitios:"));
-        add(txtSitioIdSitiosA);
-
-        add(btnGuardarA);
+        add(btnGuardar);
 
         // Acción al hacer clic en el botón Guardar
-        btnGuardarA.addActionListener(new ActionListener() {
+        btnGuardar.addActionListener(new ActionListener() 
+        {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                saveDataActivo();
+            public void actionPerformed(ActionEvent e) 
+            {
+                saveDataNodoEnlace();
             }
         });
 
         setLocationRelativeTo(null);
     }
 
-    private void saveDataActivo() 
+    private void saveDataNodoEnlace() 
     {
-        String activoId = txtActivoIdA.getText();
-        String nombre = txtNombreA.getText();
-        String clienteId = txtClienteIdA.getText();
-        String operacionId = txtOperacionIdA.getText();
-        String sitioId = txtSitioIdA.getText();
-        String procesoId = txtProcesoIdA.getText();
-        String tipo = txtTipoA.getText();
-        String estado = txtEstadoA.getText();
-        String monitor = txtMonitorA.getText();
-        String docEstado = txtDocEstadoA.getText();
-        String operacionIdOperaciones = txtOperacionIdOperacionesA.getText();
-        String sitioIdSitios = txtSitioIdSitiosA.getText();
+        // Obtener los valores seleccionados de los combos
+        String tipoNodo = (String) comboTipoNodo.getSelectedItem();
+        String tipoExpresion = (String) comboTipoExpresion.getSelectedItem();
+        String opcionTF = (String) comboOpcionTF.getSelectedItem();
 
-        System.out.println("Datos del Activo:");
-        System.out.println("Activo ID: " + activoId);
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Cliente ID: " + clienteId);
-        System.out.println("Operacion ID: " + operacionId);
-        System.out.println("Sitio ID: " + sitioId);
-        System.out.println("Proceso ID: " + procesoId);
-        System.out.println("Tipo: " + tipo);
-        System.out.println("Estado: " + estado);
-        System.out.println("Monitor: " + monitor);
-        System.out.println("Doc Estado: " + docEstado);
-        System.out.println("Operacion ID Operaciones: " + operacionIdOperaciones);
-        System.out.println("Sitio ID Sitios: " + sitioIdSitios);
+        // Mostrar los datos por consola (puedes adaptarlo para guardarlos en la base de datos)
+        System.out.println("Datos del Nodo de Enlace:");
+        System.out.println("Tipo de Nodo: " + tipoNodo);
+        System.out.println("Tipo de Expresión: " + tipoExpresion);
+        System.out.println("Opción (T/F): " + opcionTF);
 
-        // Cerrar el formulario
+        dispose();
+    }
+
+    public void activoForm(List<String> informationActivosToShow) 
+    {
+        if (getContentPane().getComponentCount() > 0) {
+            // Si ya hay componentes en el formulario, no volver a añadirlos
+            return;
+        }
+
+        setTitle("Formulario Nodo de Activos");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
+        setLayout(new GridLayout(7, 2, 5, 5)); // Formato de filas y columnas
+
+        // Inicializar listas predefinidas
+        String[] tipos = {"Hardware", "Software", "Infraestructura", "Red", "Otro"};
+        String[] estados = {"Operativo", "Inactivo", "En Reparación", "Retirado", "Desconocido"};
+        String[] monitorValores = {"T", "F"};
+
+        // Inicializar componentes
+        comboTipo = new JComboBox<>(tipos);
+        comboEstado = new JComboBox<>(estados);
+        comboMonitor = new JComboBox<>(monitorValores);
+
+        
+        btnGuardarA = new JButton("Guardar");
+
+        // Añadir etiquetas y campos al formulario
+        add(new JLabel("Tipo:"));
+        add(comboTipo);
+
+        add(new JLabel("Estado:"));
+        add(comboEstado);
+
+        add(new JLabel("Monitor (T/F):"));
+        add(comboMonitor);
+
+        add(btnGuardarA);
+
+        // Acción al hacer clic en el botón Guardar
+        btnGuardarA.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                saveDataNodoActivos();
+            }
+        });
+
+        setLocationRelativeTo(null);
+    }
+    
+
+    private void saveDataNodoActivos() 
+    {
+        // Obtener los valores seleccionados de las listas desplegables
+        String tipo = (String) comboTipo.getSelectedItem();
+        String estado = (String) comboEstado.getSelectedItem();
+        String monitor = (String) comboMonitor.getSelectedItem();
+
+
         dispose();
     }
 
     // Métodos similares para `VariablesContextoForm` y `SentenciasForm`
-    public void VariablesContextoForm() {
+    public void VariablesContextoForm(List<String> informationVariablesToShow) 
+    {
 
         if (getContentPane().getComponentCount() > 0) {
             // Si ya hay componentes en el formulario, no volver a añadirlos
@@ -179,77 +171,38 @@ public class Forms extends JFrame
         setSize(800, 600);
         setLayout(new GridLayout(18, 2, 5, 5)); // 18 filas, 2 columnas, espacio entre componentes
 
-        // Inicializar componentes
-        txtVariableIdVC = new JTextField();
-        txtNombreVC = new JTextField();
-        txtComponenteIdVC = new JTextField();
+        String[] tiposActivoId = {"ActivoId 1", "ActivoId 2", "ActivoId 3", "ActivoId 4", "ActivoId 5"};
+
         txtTipoVC = new JTextField();
-        txtLargoVC = new JTextField();
-        txtValorEnteroVC = new JTextField();
-        txtValorRealVC = new JTextField();
-        txtVectorEnteroVC = new JTextField();
-        txtVectorStringVC = new JTextField();
-        txtLocalizacionIdVC = new JTextField();
-        txtActiviIdVC = new JTextField();
-        txtLocalizacionIdLocalizacionVC = new JTextField();
-        txtAsociacionIdVC = new JTextField();
-        txtValorStringVC = new JTextField();
-        txtAsociacionIdAsociacionesVC = new JTextField();
-        txtComponenteIdComponentesActivosVC = new JTextField();
-        txtExpresionIdExpresionesVC = new JTextField();
+        txtActivoId = new JComboBox<>(tiposActivoId);
+
+        
+
         btnGuardarVC = new JButton("Guardar");
 
+
+        if (informationVariablesToShow.isEmpty()) 
+        {
+            System.out.println("Array vacío, se configuran valores predeterminados.");
+
+            txtTipoVC.setText(""); // Tipo predeterminado
+        } 
+        else 
+        {
+            System.out.println("Array lleno, cargando valores desde el array.");
+
+            txtTipoVC.setText(informationVariablesToShow.get(3)); 
+
+        }
+        
         // Añadir etiquetas y campos al formulario
-        add(new JLabel("Variable ID:"));
-        add(txtVariableIdVC);
 
-        add(new JLabel("Nombre:"));
-        add(txtNombreVC);
-
-        add(new JLabel("Componente ID:"));
-        add(txtComponenteIdVC);
 
         add(new JLabel("Tipo:"));
         add(txtTipoVC);
 
-        add(new JLabel("Largo:"));
-        add(txtLargoVC);
-
-        add(new JLabel("Valor Entero:"));
-        add(txtValorEnteroVC);
-
-        add(new JLabel("Valor Real:"));
-        add(txtValorRealVC);
-
-        add(new JLabel("Vector Entero:"));
-        add(txtVectorEnteroVC);
-
-        add(new JLabel("Vector String:"));
-        add(txtVectorStringVC);
-
-        add(new JLabel("Localización ID:"));
-        add(txtLocalizacionIdVC);
-
-        add(new JLabel("Activi ID:"));
-        add(txtActiviIdVC);
-
-        add(new JLabel("Localización ID Localización:"));
-        add(txtLocalizacionIdLocalizacionVC);
-
-        add(new JLabel("Asociación ID:"));
-        add(txtAsociacionIdVC);
-
-        add(new JLabel("Valor String:"));
-        add(txtValorStringVC);
-
-        add(new JLabel("Asociación ID Asociaciones:"));
-        add(txtAsociacionIdAsociacionesVC);
-
-        add(new JLabel("Componente ID Componentes Activos:"));
-        add(txtComponenteIdComponentesActivosVC);
-
-        add(new JLabel("Expresión ID Expresiones:"));
-        add(txtExpresionIdExpresionesVC);
+        add(new JLabel("ActivoId:"));
+        add(txtActivoId);
 
         add(btnGuardarVC);
 
@@ -263,49 +216,23 @@ public class Forms extends JFrame
     private void saveDataVariablesContexto() 
     {
         // Recoger los datos ingresados en el formulario
-        String variableId = txtVariableIdVC.getText();
-        String nombre = txtNombreVC.getText();
-        String componenteId = txtComponenteIdVC.getText();
+
         String tipo = txtTipoVC.getText();
-        String largo = txtLargoVC.getText();
-        String valorEntero = txtValorEnteroVC.getText();
-        String valorReal = txtValorRealVC.getText();
-        String vectorEntero = txtVectorEnteroVC.getText();
-        String vectorString = txtVectorStringVC.getText();
-        String localizacionId = txtLocalizacionIdVC.getText();
-        String activiId = txtActiviIdVC.getText();
-        String localizacionIdLocalizacion = txtLocalizacionIdLocalizacionVC.getText();
-        String asociacionId = txtAsociacionIdVC.getText();
-        String valorString = txtValorStringVC.getText();
-        String asociacionIdAsociaciones = txtAsociacionIdAsociacionesVC.getText();
-        String componenteIdComponentesActivos = txtComponenteIdComponentesActivosVC.getText();
-        String expresionIdExpresiones = txtExpresionIdExpresionesVC.getText();
+        String activoId = (String) txtActivoId.getSelectedItem();
 
         // Mostrar los datos por consola (puedes adaptarlo para guardarlos en la base de datos)
         System.out.println("Datos de Variables Contexto:");
-        System.out.println("Variable ID: " + variableId);
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Componente ID: " + componenteId);
+
         System.out.println("Tipo: " + tipo);
-        System.out.println("Largo: " + largo);
-        System.out.println("Valor Entero: " + valorEntero);
-        System.out.println("Valor Real: " + valorReal);
-        System.out.println("Vector Entero: " + vectorEntero);
-        System.out.println("Vector String: " + vectorString);
-        System.out.println("Localización ID: " + localizacionId);
-        System.out.println("Activi ID: " + activiId);
-        System.out.println("Localización ID Localización: " + localizacionIdLocalizacion);
-        System.out.println("Asociación ID: " + asociacionId);
-        System.out.println("Valor String: " + valorString);
-        System.out.println("Asociación ID Asociaciones: " + asociacionIdAsociaciones);
-        System.out.println("Componente ID Componentes Activos: " + componenteIdComponentesActivos);
-        System.out.println("Expresión ID Expresiones: " + expresionIdExpresiones);
+        System.out.println("activoId: " + activoId);
+
         // Cerrar el formulario
         dispose();
     }
 
-    public void SentenciasForm() {
-
+    public void SentenciasForm(List<String> informationSentenciasToShow) 
+    {
+        System.out.println(informationSentenciasToShow + "llego a sentencias");
         if (getContentPane().getComponentCount() > 0) 
         {
             // Si ya hay componentes en el formulario, no volver a añadirlos
@@ -318,32 +245,27 @@ public class Forms extends JFrame
         setLayout(new GridLayout(7, 2, 5, 5)); // 7 filas, 2 columnas, espacio entre componentes
 
         // Inicializar componentes
-        txtSentenciaIdS = new JTextField();
-        txtNombreS = new JTextField();
-        txtQueryS = new JTextField();
+
         txtEstadoS = new JTextField();
-        txtFechaAprobacionS = new JTextField();
-        txtAlertaIdAlertasDefinicionS = new JTextField();
+
         btnGuardarS = new JButton("Guardar");
 
+        if (informationSentenciasToShow.isEmpty()) 
+        {
+            System.out.println("Array vacío, se configuran valores predeterminados.");
+            txtEstadoS.setText(""); // Ejemplo de Estado
+        } 
+        else 
+        {
+            System.out.println("Array lleno, cargando valores desde el array.");
+            txtEstadoS.setText(informationSentenciasToShow.get(3)); 
+        }
         // Añadir etiquetas y campos al formulario
-        add(new JLabel("Sentencia ID:"));
-        add(txtSentenciaIdS);
 
-        add(new JLabel("Nombre:"));
-        add(txtNombreS);
 
-        add(new JLabel("Query:"));
-        add(txtQueryS);
 
         add(new JLabel("Estado:"));
         add(txtEstadoS);
-
-        add(new JLabel("Fecha Aprobación:"));
-        add(txtFechaAprobacionS);
-
-        add(new JLabel("Alerta ID Alertas Definición:"));
-        add(txtAlertaIdAlertasDefinicionS);
 
         add(btnGuardarS);
 
@@ -354,23 +276,14 @@ public class Forms extends JFrame
         //setVisible(true); // Hacer visible la ventana
     }
 
-    private void saveDataSentencias() {
+    private void saveDataSentencias() 
+    {
         // Recoger los datos ingresados en el formulario
-        String sentenciaId = txtSentenciaIdS.getText();
-        String nombre = txtNombreS.getText();
-        String query = txtQueryS.getText();
         String estado = txtEstadoS.getText();
-        String fechaAprobacion = txtFechaAprobacionS.getText();
-        String alertaIdAlertasDefinicion = txtAlertaIdAlertasDefinicionS.getText();
 
         // Mostrar los datos por consola (puedes adaptarlo para guardarlos en la base de datos)
         System.out.println("Datos de Sentencias:");
-        System.out.println("Sentencia ID: " + sentenciaId);
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Query: " + query);
         System.out.println("Estado: " + estado);
-        System.out.println("Fecha Aprobación: " + fechaAprobacion);
-        System.out.println("Alerta ID Alertas Definición: " + alertaIdAlertasDefinicion);
 
         dispose();
     }

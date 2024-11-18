@@ -162,26 +162,35 @@ public class Interfaz extends JFrame
                 }
 
                 String tipoNodo = querys.findTypeOfNodo(selectedNode.getUserObject().toString());
+                Integer nodoArbolId = Integer.parseInt(selectedNode.getUserObject().toString());
         
+        List<String> causeId = querys.getDataForNodoArbol(nodoArbolId);
         // Crear una nueva instancia del formulario adecuado según el tipo de nodo
-        if ("Activos".equals(tipoNodo) || "Nodo de activos".equals(tipoNodo)) 
+        if ("activos".equals(tipoNodo) || "Nodo de activos".equals(tipoNodo)) 
         {
             Forms activoForm = new Forms();
-            activoForm.activoForm(); // Configurar el formulario
+            activoForm.activoForm(causeId); // Configurar el formulario
             activoForm.setVisible(true); // Mostrar el formulario
         } 
         else if ("sentencias".equals(tipoNodo) || "Nodo de sentencias".equals(tipoNodo)) 
         {
+            
             Forms sentenciasForm = new Forms();
-            sentenciasForm.SentenciasForm(); // Configurar el formulario
+            sentenciasForm.SentenciasForm(causeId); // Configurar el formulario
             sentenciasForm.setVisible(true); // Mostrar el formulario
         } 
         else if ("variables".equals(tipoNodo) || "Nodo de variables".equals(tipoNodo)) 
         {
             Forms variablesForm = new Forms();
-            variablesForm.VariablesContextoForm(); // Configurar el formulario
+            variablesForm.VariablesContextoForm(causeId); // Configurar el formulario
             variablesForm.setVisible(true); // Mostrar el formulario
-        } 
+        }
+        else if ("enlace".equals(tipoNodo) || "Nodo de enlace".equals(tipoNodo)) 
+        {
+            Forms enlaceForm = new Forms();
+            enlaceForm.enlaceForm(causeId); // Configurar el formulario
+            enlaceForm.setVisible(true); // Mostrar el formulario
+        }  
         else 
         {
             System.out.println("Tipo de nodo no coincide con ningún formulario.");
