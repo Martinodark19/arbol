@@ -1,4 +1,4 @@
-package com.tree.CapaNegocio;
+package tree;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,7 +13,6 @@ public class Database
 
   //remplazar aqui su base de datos
   String url = "jdbc:sqlserver://localhost:1433;databaseName=arbol_db;integratedSecurity=true;encrypt=false;";
-
 
     public void testDatabaseConnection() throws SQLException, ClassNotFoundException 
     {
@@ -33,9 +32,6 @@ public class Database
         }
     }
 
-
-    
-  
     public List<String> findNodesParents() 
     {
         String query = "SELECT nodoArbolId FROM dbo.nodoarbol";
@@ -51,9 +47,9 @@ public class Database
             while (resultSet.next()) 
             {
                 String alertName = resultSet.getString("nodoArbolId");
+                
                 results.add(alertName);
             }
-            //System.out.println("Consulta ejecutada exitosamente: " + query);
         } 
         catch (SQLException e) 
         {
@@ -66,7 +62,7 @@ public class Database
     public List<String> findNodesChildren(String idNodeParent)
     {
         String query = "SELECT * FROM nodosHijos WHERE nodoPadre = ?";
-        
+
         List<String> results = new ArrayList<>();
 
         try
@@ -121,8 +117,6 @@ public class Database
         }
 
         return alertName;
-
-
     }
 
     public List<String> getDataForNodoArbol(int nodoArbolId) 
@@ -178,6 +172,7 @@ public class Database
                     detailStatement = connection.prepareStatement(sentenciasQuery);
                     detailStatement.setInt(1, causaId);
                     break;
+        
     
                 default:
                     System.out.println("Tipo de nodo desconocido: " + tipoNodo);
@@ -185,7 +180,8 @@ public class Database
             }
     
             // Ejecutar consulta específica y llenar el array
-            if (detailStatement != null) {
+            if (detailStatement != null) 
+            {
                 resultSet = detailStatement.executeQuery();
                 System.out.println(resultSet  + "paso por el resulset");
                 while (resultSet.next()) {
@@ -210,6 +206,38 @@ public class Database
     
         return arrayNodoInformation;
     }
+
+    // Método para obtener los nombres de la columna "nombre"
+
+    
+    public String getNameFromNodoArbol(Integer nodoArbolId) 
+    {
+        String nombre = "";
+
+        String query = "SELECT nombre FROM nodoarbol WHERE nodoArbolId = ?";
+
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query); 
+            preparedStatement.setInt(1, nodoArbolId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+
+
+            while (resultSet.next()) 
+            {
+                nombre = resultSet.getString("nombre");
+            }
+        }
+         catch (Exception e) 
+        {
+            e.printStackTrace();
+        }
+        return nombre;
+    }
+    
     
     
 

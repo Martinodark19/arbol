@@ -1,4 +1,5 @@
-package com.tree.CapaNegocio;
+package tree;
+
 
 import java.util.Objects;
 
