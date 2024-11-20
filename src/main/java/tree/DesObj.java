@@ -10,7 +10,8 @@ public class DesObj
     private int anioNace;
     private int anioFallece;
 
-    public DesObj(String nombre, String conyuge, int anioNace, int anioFallece) {
+    public DesObj(String nombre, String conyuge, int anioNace, int anioFallece) 
+    {
         this.nombre = nombre;
         this.conyuge = conyuge;
         this.anioNace = anioNace;

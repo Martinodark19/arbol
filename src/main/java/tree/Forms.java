@@ -3,11 +3,11 @@ package tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -43,31 +43,9 @@ public class Forms
 
     public void enlaceForm(List<String> informationActivosToShow, Integer nodoArbolId) {
         resetPanel();
-    
-        // Obtener el título dinámico
-        String titulo = "Sin Nombre";
-        if (nodoArbolId != null) 
-        {
-            try 
-            {
-                String nombre = querys.getNameFromNodoArbol(nodoArbolId);
-                titulo = (nombre != null && !nombre.isEmpty()) ? nombre : "Sin Nombre";
-            } 
-            catch (NumberFormatException e) 
-            {
-                System.err.println("Error en el formato del ID del nodo: " + e.getMessage());
-            }
-        }
-    
-        // Cambiar el diseño del panel principal
+        
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Nodo de Enlace"));
-    
-        // Configurar y agregar el título
-        JLabel tituloLabel = new JLabel(titulo, JLabel.CENTER);
-        tituloLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Fuente grande y en negrita
-        tituloLabel.setForeground(Color.BLACK);
-        panel.add(tituloLabel, BorderLayout.NORTH);
     
         // Crear un panel secundario para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
@@ -131,33 +109,18 @@ public class Forms
     
     
 
-    public void activoForm(List<String> informationActivosToShow, Integer nodoArbolId) {
+    public void activoForm(List<String> informationActivosToShow, Integer nodoArbolId) 
+    {
         resetPanel();
-    
-        // Obtener el título
-        String titulo = "";
-        if (nodoArbolId != null) {
-            try 
-            {
-                String nombre = querys.getNameFromNodoArbol(nodoArbolId);
-                titulo = (nombre != null && !nombre.isEmpty()) ? nombre : "Sin Nombre";
-            } 
-            catch (NumberFormatException e) 
-            {
-                System.err.println("Error en el formato del ID del nodo: " + e.getMessage());
-            }
-        }
+
+
     
         // Cambiar el diseño a BorderLayout para separar el título del formulario
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Nodo de Activos"));
         panel.setBackground(new Color(184, 211, 173));
     
-        // Configurar y agregar el título
-        JLabel tituloLabel = new JLabel(titulo, JLabel.CENTER);
-        tituloLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Fuente grande y en negrita
-        tituloLabel.setForeground(Color.black);
-        panel.add(tituloLabel, BorderLayout.NORTH);
+
     
         // Crear otro panel para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
@@ -166,6 +129,8 @@ public class Forms
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+
+
     
         // Campos del formulario
         JLabel lblTipo = new JLabel("Tipo:");
@@ -176,6 +141,19 @@ public class Forms
     
         JLabel lblMonitor = new JLabel("Monitor (T/F):");
         JComboBox<String> comboMonitor = new JComboBox<>(new String[]{"T", "F"});
+
+
+            
+        // Obtener los valores actuales de la base de datos
+        Map<String, String> activoDetails = querys.getActivoDetails(nodoArbolId);
+        
+        if (!activoDetails.isEmpty()) 
+        {
+            // Preseleccionar valores en los JComboBox
+            comboTipo.setSelectedItem(activoDetails.get("tipo")); // Ejemplo: "Hardware"
+            comboEstado.setSelectedItem(activoDetails.get("estado")); // Ejemplo: "Operativo"
+            comboMonitor.setSelectedItem(activoDetails.get("monitor")); // Ejemplo: "T"
+        }
     
         JButton btnGuardar = new JButton("Guardar");
     
@@ -224,32 +202,10 @@ public class Forms
     public void VariablesContextoForm(List<String> informationVariablesToShow, Integer nodoArbolId) {
         resetPanel();
     
-        // Obtener el título dinámico
-        String titulo = "Sin Nombre";
-        if (nodoArbolId != null) 
-        {
-            try 
-            {
-                String nombre = querys.getNameFromNodoArbol(nodoArbolId);
-                titulo = (nombre != null && !nombre.isEmpty()) ? nombre : "Sin Nombre";
-            } 
-            catch (NumberFormatException e) 
-            {
-                System.err.println("Error en el formato del ID del nodo: " + e.getMessage());
-            }
-        }
-    
         // Cambiar el diseño del panel principal
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
         panel.setBackground(new Color(184, 211, 173));
-
-    
-        // Configurar y agregar el título
-        JLabel tituloLabel = new JLabel(titulo, JLabel.CENTER);
-        tituloLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Fuente grande y en negrita
-        tituloLabel.setForeground(Color.BLACK);
-        panel.add(tituloLabel, BorderLayout.NORTH);
     
         // Crear un panel secundario para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
@@ -262,7 +218,28 @@ public class Forms
         JLabel lblTipoVC = new JLabel("Tipo:");
         JTextField txtTipoVC = new JTextField();
         JLabel lblActivoId = new JLabel("ActivoId:");
-        JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"ActivoId 1", "ActivoId 2", "ActivoId 3"});
+        JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3"});
+
+
+            // Obtener los valores actuales de la base de datos
+    Map<String, String> variableDetails = querys.getVariableDetails(nodoArbolId);
+    if (!variableDetails.isEmpty()) {
+        System.out.println("Datos obtenidos: " + variableDetails);
+
+        if (variableDetails.containsKey("tipo") && variableDetails.get("tipo") != null) {
+            txtTipoVC.setText(variableDetails.get("tipo"));
+        }
+
+        if (variableDetails.containsKey("activoId") && variableDetails.get("activoId") != null) {
+            for (int i = 0; i < comboActivoId.getItemCount(); i++) {
+                if (comboActivoId.getItemAt(i).equalsIgnoreCase(variableDetails.get("activoId").trim())) {
+                    comboActivoId.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
         JButton btnGuardar = new JButton("Guardar");
     
         // Añadir componentes al formularioPanel
@@ -302,32 +279,15 @@ public class Forms
     }
     
 
-    public void SentenciasForm(List<String> informationSentenciasToShow, Integer nodoArbolId) {
+    public void SentenciasForm(List<String> informationSentenciasToShow, Integer nodoArbolId) 
+    {
         resetPanel();
-    
-        // Obtener el título dinámico
-        String titulo = "";
-        if (nodoArbolId != null) {
-            try {
-                String nombre = querys.getNameFromNodoArbol(nodoArbolId);
-                titulo = (nombre != null && !nombre.isEmpty()) ? nombre : "Sin Nombre";
-            } catch (NumberFormatException e) {
-                System.err.println("Error en el formato del ID del nodo: " + e.getMessage());
-            }
-        }
     
         // Cambiar el diseño del panel principal
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Sentencias"));
         panel.setBackground(new Color(184, 211, 173));
 
-    
-        // Configurar y agregar el título
-        JLabel tituloLabel = new JLabel(titulo, JLabel.CENTER);
-        tituloLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Fuente grande y en negrita
-        tituloLabel.setForeground(Color.BLACK);
-        panel.add(tituloLabel, BorderLayout.NORTH);
-    
         // Crear un panel secundario para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
         formularioPanel.setBackground(new Color(184, 211, 173));
@@ -339,6 +299,18 @@ public class Forms
         JLabel lblEstado = new JLabel("Estado:");
         JTextField txtEstado = new JTextField();
         txtEstado.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo de texto
+
+            // Obtener los valores actuales de la base de datos
+        Map<String, String> sentenciaDetails = querys.getSentenciaDetails(nodoArbolId);
+
+        if (!sentenciaDetails.isEmpty()) {
+            System.out.println("Datos obtenidos de la sentencia: " + sentenciaDetails);
+
+            if (sentenciaDetails.containsKey("estado") && sentenciaDetails.get("estado") != null) {
+                txtEstado.setText(sentenciaDetails.get("estado"));
+            }
+        }
+
         JButton btnGuardar = new JButton("Guardar");
     
         // Añadir componentes al formularioPanel

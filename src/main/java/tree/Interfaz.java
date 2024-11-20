@@ -25,6 +25,8 @@ public class Interfaz extends JFrame
     private Database querys;
     private Map<Integer, String> nodosPadresMap = new HashMap<>();
     private Map<Integer, String> nodosHijosMap = new HashMap<>();
+    private Map<Integer, String> nombresNodosMap = new HashMap<>();
+
 
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
@@ -73,56 +75,61 @@ public class Interfaz extends JFrame
         }
 
         // Cargar datos del árbol
-        ObtenerNodosPadres();
+        //ObtenerNodosPadres();
         createTreeModel();
 
         setLocationRelativeTo(null);
     }
 
-    private void ObtenerNodosPadres() {
+    private void createTreeModel() 
+    {
         List<String> queryGetParents = querys.findNodesParents();
 
-        if (queryGetParents != null && !queryGetParents.isEmpty()) {
-            for (String parent : queryGetParents) {
-                if (!nodosPadresMap.containsValue(parent)) {
-                    nodosPadresMap.put(nodosPadresMap.size(), parent);
-                }
-            }
-        } else {
-            System.out.println("No existieron nodos padres en la base de datos");
-        }
-    }
-
-    private void createTreeModel() {
-        List<String> queryGetParents = querys.findNodesParents();
-
-        if (queryGetParents != null && !queryGetParents.isEmpty()) {
+        if (queryGetParents != null && !queryGetParents.isEmpty()) 
+        {
             Map<Integer, DefaultMutableTreeNode> mapaNodos = new HashMap<>();
 
-            for (String parentId : queryGetParents) {
-                if (!mapaNodos.containsKey(Integer.parseInt(parentId))) {
-                    DefaultMutableTreeNode nodoPadre = new DefaultMutableTreeNode(parentId);
-                    mapaNodos.put(Integer.parseInt(parentId), nodoPadre);
-                    root.add(nodoPadre);
+            for (String parentId : queryGetParents) 
+            {
+                String getNamesFromNodos = querys.getNameFromNodoArbol(Integer.parseInt(parentId));
 
-                    construirHijos(parentId, nodoPadre, mapaNodos);
+
+                nombresNodosMap.put(Integer.parseInt(parentId), getNamesFromNodos);
+
+                
+                //ahora preguntaremos en el map nombresNodosMap por el parentId para obtener el nombre del nodo
+
+                if (!mapaNodos.containsKey(Integer.parseInt(parentId))) 
+                {
+                        DefaultMutableTreeNode nodoPadre = new DefaultMutableTreeNode(nombresNodosMap.get(Integer.parseInt(parentId)));
+
+                        mapaNodos.put(Integer.parseInt(parentId), nodoPadre);
+                        root.add(nodoPadre);
+
+                        construirHijos(parentId, nodoPadre, mapaNodos);
+                    
                 }
             }
 
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
             model.reload(root);
-        } else {
+        } 
+        else 
+        {
             System.out.println("No se encontraron nodos padres en la base de datos.");
         }
 
         tree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            Integer findNodoArbolIdFromName = querys.getNodoArbolIdByName(selectedNode);
 
-            if (selectedNode != null && selectedNode.getUserObject() != null) {
-                String tipoNodo = querys.findTypeOfNodo(selectedNode.getUserObject().toString());
-                Integer nodoArbolId = Integer.parseInt(selectedNode.getUserObject().toString());
+            if (selectedNode != null && selectedNode.getUserObject() != null) 
+            {
+                String tipoNodo = querys.findTypeOfNodo(findNodoArbolIdFromName.toString());
+                Integer nodoArbolId = Integer.parseInt(findNodoArbolIdFromName.toString());
 
                 List<String> causeId = querys.getDataForNodoArbol(nodoArbolId);
+                System.out.println("aqui esta el causeID" + causeId);
                 
                 // Limpiar el panel derecho antes de agregar un nuevo formulario
                 formPanel.removeAll();
@@ -156,15 +163,19 @@ public class Interfaz extends JFrame
                 formPanel.revalidate();
                 formPanel.repaint();
             }
+
+
         });
     }
 
     private void construirHijos(String idNodoPadre, DefaultMutableTreeNode nodoPadre, Map<Integer, DefaultMutableTreeNode> mapaNodos) {
         List<String> hijos = querys.findNodesChildren(idNodoPadre);
 
-        for (String hijoId : hijos) {
-            if (!mapaNodos.containsKey(Integer.parseInt(hijoId))) {
-                DefaultMutableTreeNode nodoHijo = new DefaultMutableTreeNode(hijoId);
+        for (String hijoId : hijos) 
+        {
+            if (!mapaNodos.containsKey(Integer.parseInt(hijoId))) 
+            {
+                DefaultMutableTreeNode nodoHijo = new DefaultMutableTreeNode(querys.getNameFromNodoArbol(Integer.parseInt(hijoId)));
                 nodoPadre.add(nodoHijo);
                 mapaNodos.put(Integer.parseInt(hijoId), nodoHijo);
 

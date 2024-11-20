@@ -6,7 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Database
 {
@@ -82,13 +86,12 @@ public class Database
         {
             e.printStackTrace();
         }
-
         return results; 
     }
 
     public String findTypeOfNodo(String nodoArbolId)
     {
-        String alertName = "";
+        String alertName = "";        
 
         int id = Integer.parseInt(nodoArbolId);
 
@@ -183,7 +186,6 @@ public class Database
             if (detailStatement != null) 
             {
                 resultSet = detailStatement.executeQuery();
-                System.out.println(resultSet  + "paso por el resulset");
                 while (resultSet.next()) {
                     int columnCount = resultSet.getMetaData().getColumnCount();
                     for (int i = 1; i <= columnCount; i++) {
@@ -237,6 +239,141 @@ public class Database
         }
         return nombre;
     }
+
+
+    public Integer getNodoArbolIdByName(DefaultMutableTreeNode selectedNode) 
+    {
+        Integer nodoArbolId = null; // Variable para almacenar el resultado
+
+        if (selectedNode != null && selectedNode.getUserObject() != null) 
+        {
+            // Extraer el nombre desde el nodo seleccionado
+            String nombre = selectedNode.getUserObject().toString();
+
+            String query = "SELECT nodoArbolId FROM nodoarbol WHERE nombre = ?";
+
+            try
+            {
+                Connection connection = DriverManager.getConnection(url);
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                // Configurar el parámetro de la consulta
+                preparedStatement.setString(1, nombre);
+
+                // Ejecutar la consulta
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (resultSet.next()) 
+                {
+                    // Obtener el nodoArbolId de la consulta
+                    nodoArbolId = resultSet.getInt("nodoArbolId");
+                    System.out.println("NodoArbolId encontrado: " + nodoArbolId);
+                } 
+                else 
+                {
+                    System.out.println("No se encontró un nodo con el nombre: " + nombre);
+                }
+                
+
+            } 
+            catch (SQLException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+        else 
+        {
+            System.out.println("El nodo seleccionado no es válido.");
+        }
+
+        return nodoArbolId;
+}
+
+    
+// metodos para acceder a los valores de los formularios
+
+
+    public Map<String, String> getActivoDetails(int activoId) 
+    {
+        Map<String, String> activoDetails = new HashMap<>();
+
+        String query = "SELECT tipo, estado, monitor FROM activos WHERE activoId = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query)) 
+            {
+
+            // Configurar el parámetro activoId
+            preparedStatement.setInt(1, activoId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Extraer los valores de las columnas
+                    activoDetails.put("tipo", resultSet.getString("tipo"));
+                    activoDetails.put("estado", resultSet.getString("estado"));
+                    activoDetails.put("monitor", resultSet.getString("monitor"));
+                } else {
+                    System.out.println("No se encontró ningún registro con el activoId: " + activoId);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Detalles del activo obtenidos: " + activoDetails);
+        return activoDetails;
+    }
+
+    public Map<String, String> getVariableDetails(Integer variableId) {
+        Map<String, String> variableDetails = new HashMap<>();
+
+        String query = "SELECT tipo, activoId FROM variablescontexto WHERE VariableId = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, variableId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    variableDetails.put("tipo", resultSet.getString("tipo"));
+                    variableDetails.put("activoId", resultSet.getString("activoId"));
+                } else {
+                    System.out.println("No se encontró ningún registro con el VariableId: " + variableId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return variableDetails;
+    }
+
+
+    public Map<String, String> getSentenciaDetails(Integer sentenciaId) 
+    {
+        Map<String, String> sentenciaDetails = new HashMap<>();
+    
+        String query = "SELECT estado FROM sentencias WHERE sentenciaId = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    
+            preparedStatement.setInt(1, sentenciaId);
+    
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    sentenciaDetails.put("estado", resultSet.getString("estado"));
+                } else {
+                    System.out.println("No se encontró ningún registro con el sentenciaId: " + sentenciaId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return sentenciaDetails;
+    }
+    
+
+
     
     
     
