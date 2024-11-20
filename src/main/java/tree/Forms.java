@@ -13,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -41,7 +42,8 @@ public class Forms
         panel.repaint();
     }
 
-    public void enlaceForm(List<String> informationActivosToShow, Integer nodoArbolId) {
+    public void enlaceForm(List<String> informationActivosToShow, Integer nodoArbolId) 
+    {
         resetPanel();
         
         panel.setLayout(new BorderLayout());
@@ -184,10 +186,38 @@ public class Forms
     
         // Acción del botón Guardar
         btnGuardar.addActionListener(e -> {
+
             System.out.println("Guardando Nodo de Activos:");
-            System.out.println("Tipo: " + comboTipo.getSelectedItem());
-            System.out.println("Estado: " + comboEstado.getSelectedItem());
-            System.out.println("Monitor: " + comboMonitor.getSelectedItem());
+
+            // Obtener valores actuales del formulario
+            String tipo = (String) comboTipo.getSelectedItem();
+            String estado = (String) comboEstado.getSelectedItem();
+            String monitor = (String) comboMonitor.getSelectedItem();
+        
+            // Actualizar en la base de datos
+            boolean isUpdated = querys.updateActivoDetails(nodoArbolId, tipo, estado, monitor);
+        
+            if (isUpdated) 
+            {
+                JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
+        
+                // Recargar los valores desde la base de datos
+                Map<String, String> updatedDetails = querys.getActivoDetails(nodoArbolId);
+                if (!updatedDetails.isEmpty()) 
+                {
+                    comboTipo.setSelectedItem(updatedDetails.get("tipo"));
+                    comboEstado.setSelectedItem(updatedDetails.get("estado"));
+                    comboMonitor.setSelectedItem(updatedDetails.get("monitor"));
+                }
+        
+                // Refrescar el panel
+                panel.revalidate();
+                panel.repaint();
+            } 
+            else 
+            {
+                JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
+            }
         });
     
         // Agregar el formulario al centro del panel principal
@@ -221,24 +251,29 @@ public class Forms
         JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3"});
 
 
-            // Obtener los valores actuales de la base de datos
-    Map<String, String> variableDetails = querys.getVariableDetails(nodoArbolId);
-    if (!variableDetails.isEmpty()) {
-        System.out.println("Datos obtenidos: " + variableDetails);
+        // Obtener los valores actuales de la base de datos
+        Map<String, String> variableDetails = querys.getVariableDetails(nodoArbolId);
+        if (!variableDetails.isEmpty()) 
+        {
+            System.out.println("Datos obtenidos: " + variableDetails);
 
-        if (variableDetails.containsKey("tipo") && variableDetails.get("tipo") != null) {
-            txtTipoVC.setText(variableDetails.get("tipo"));
-        }
+            if (variableDetails.containsKey("tipo") && variableDetails.get("tipo") != null) 
+            {
+                txtTipoVC.setText(variableDetails.get("tipo"));
+            }
 
-        if (variableDetails.containsKey("activoId") && variableDetails.get("activoId") != null) {
-            for (int i = 0; i < comboActivoId.getItemCount(); i++) {
-                if (comboActivoId.getItemAt(i).equalsIgnoreCase(variableDetails.get("activoId").trim())) {
-                    comboActivoId.setSelectedIndex(i);
-                    break;
+            if (variableDetails.containsKey("activoId") && variableDetails.get("activoId") != null) 
+            {
+                for (int i = 0; i < comboActivoId.getItemCount(); i++) 
+                {
+                    if (comboActivoId.getItemAt(i).equalsIgnoreCase(variableDetails.get("activoId").trim())) 
+                    {
+                        comboActivoId.setSelectedIndex(i);
+                        break;
+                    }
                 }
             }
         }
-    }
 
         JButton btnGuardar = new JButton("Guardar");
     
@@ -266,8 +301,31 @@ public class Forms
         // Acción del botón Guardar
         btnGuardar.addActionListener(e -> {
             System.out.println("Guardando Variables Contexto:");
-            System.out.println("Tipo: " + txtTipoVC.getText());
-            System.out.println("ActivoId: " + comboActivoId.getSelectedItem());
+            String tipo = txtTipoVC.getText();
+            String activoId = comboActivoId.getSelectedItem().toString().replace("ActivoId ", "");
+    
+            boolean isUpdated = querys.updateVariableDetails(nodoArbolId, tipo, activoId);
+    
+            if (isUpdated) 
+            {
+                JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
+    
+                // Recargar los valores actualizados desde la base de datos
+                Map<String, String> updatedDetails = querys.getVariableDetails(nodoArbolId);
+                if (!updatedDetails.isEmpty()) 
+                {
+                    txtTipoVC.setText(updatedDetails.get("tipo"));
+                    comboActivoId.setSelectedItem("ActivoId " + updatedDetails.get("activoId"));
+                }
+    
+                // Refrescar el panel
+                panel.revalidate();
+                panel.repaint();
+            } 
+            else 
+            {
+                JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
+            }
         });
     
         // Agregar el formulario al centro del panel principal
@@ -303,10 +361,12 @@ public class Forms
             // Obtener los valores actuales de la base de datos
         Map<String, String> sentenciaDetails = querys.getSentenciaDetails(nodoArbolId);
 
-        if (!sentenciaDetails.isEmpty()) {
+        if (!sentenciaDetails.isEmpty()) 
+        {
             System.out.println("Datos obtenidos de la sentencia: " + sentenciaDetails);
 
-            if (sentenciaDetails.containsKey("estado") && sentenciaDetails.get("estado") != null) {
+            if (sentenciaDetails.containsKey("estado") && sentenciaDetails.get("estado") != null) 
+            {
                 txtEstado.setText(sentenciaDetails.get("estado"));
             }
         }
@@ -332,6 +392,33 @@ public class Forms
         // Acción del botón Guardar
         btnGuardar.addActionListener(e -> {
             System.out.println("Guardando Sentencias:");
+
+            // Obtener el valor ingresado por el usuario
+            String estado = txtEstado.getText();
+    
+            // Actualizar el valor en la base de datos
+            boolean isUpdated = querys.updateSentenciaEstado(nodoArbolId, estado);
+    
+            if (isUpdated) 
+            {
+                JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
+                
+                // Recargar el campo con los datos actualizados
+                Map<String, String> updatedDetails = querys.getSentenciaDetails(nodoArbolId);
+                if (!updatedDetails.isEmpty()) 
+                {
+                    txtEstado.setText(updatedDetails.get("estado"));
+                }
+    
+                // Refrescar el panel
+                panel.revalidate();
+                panel.repaint();
+            } 
+            else 
+            {
+                JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
+            }        
+        
         });
     
         // Agregar el formulario al centro del panel principal

@@ -211,7 +211,7 @@ public class Database
 
     // Método para obtener los nombres de la columna "nombre"
 
-    
+    /* */
     public String getNameFromNodoArbol(Integer nodoArbolId) 
     {
         String nombre = "";
@@ -287,6 +287,7 @@ public class Database
         return nodoArbolId;
 }
 
+
     
 // metodos para acceder a los valores de los formularios
 
@@ -319,7 +320,6 @@ public class Database
             e.printStackTrace();
         }
 
-        System.out.println("Detalles del activo obtenidos: " + activoDetails);
         return activoDetails;
     }
 
@@ -347,7 +347,6 @@ public class Database
         return variableDetails;
     }
 
-
     public Map<String, String> getSentenciaDetails(Integer sentenciaId) 
     {
         Map<String, String> sentenciaDetails = new HashMap<>();
@@ -371,6 +370,71 @@ public class Database
     
         return sentenciaDetails;
     }
+
+
+    //metodos para actualizar los datos de los formularios
+
+    public boolean updateActivoDetails(int activoId, String tipo, String estado, String monitor) {
+        String query = "UPDATE activos SET tipo = ?, estado = ?, monitor = ? WHERE activoId = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    
+            preparedStatement.setString(1, tipo);
+            preparedStatement.setString(2, estado);
+            preparedStatement.setString(3, monitor);
+            preparedStatement.setInt(4, activoId);
+    
+            int rowsUpdated = preparedStatement.executeUpdate();
+            System.out.println(rowsUpdated + " se actualizzz");
+            return rowsUpdated > 0; // Retorna true si se actualizó al menos una fila
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public boolean updateVariableDetails(int variableId, String tipo, String activoId) 
+    {
+        String query = "UPDATE variablescontexto SET tipo = ?, activoId = ? WHERE VariableId = ?";
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    
+            preparedStatement.setString(1, tipo);
+            preparedStatement.setInt(2, Integer.parseInt(activoId));
+            preparedStatement.setInt(3, variableId);
+    
+            int rowsUpdated = preparedStatement.executeUpdate();
+            return rowsUpdated > 0;
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+
+
+    public boolean updateSentenciaEstado(int sentenciaId, String estado) {
+        String updateQuery = "UPDATE sentencias SET estado = ? WHERE sentenciaId = ?";
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+    
+            preparedStatement.setString(1, estado);
+            preparedStatement.setInt(2, sentenciaId);
+    
+            int rowsUpdated = preparedStatement.executeUpdate();
+            return rowsUpdated > 0;
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    
     
 
 
