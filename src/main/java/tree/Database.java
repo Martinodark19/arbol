@@ -14,7 +14,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Database
 {
-
   //remplazar aqui su base de datos
   String url = "jdbc:sqlserver://localhost:1433;databaseName=arbol_db;integratedSecurity=true;encrypt=false;";
 
@@ -30,7 +29,9 @@ public class Database
         try (Connection connection = DriverManager.getConnection(url)) 
         {
             System.out.println("Conexión exitosa a la base de datos.");
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             System.err.println("Error al conectar a la base de datos: " + e.getMessage());
             throw e;
         }
@@ -39,7 +40,6 @@ public class Database
     public List<String> findNodesParents() 
     {
         String query = "SELECT nodoArbolId FROM dbo.nodoarbol";
-        
         List<String> results = new ArrayList<>();
 
         try
@@ -51,7 +51,6 @@ public class Database
             while (resultSet.next()) 
             {
                 String alertName = resultSet.getString("nodoArbolId");
-                
                 results.add(alertName);
             }
         } 
@@ -66,7 +65,6 @@ public class Database
     public List<String> findNodesChildren(String idNodeParent)
     {
         String query = "SELECT * FROM nodosHijos WHERE nodoPadre = ?";
-
         List<String> results = new ArrayList<>();
 
         try
@@ -92,15 +90,12 @@ public class Database
     public String findTypeOfNodo(String nodoArbolId)
     {
         String alertName = "";        
-
         int id = Integer.parseInt(nodoArbolId);
 
         try
         {
             String query = "SELECT tipoNodo FROM nodoArbol WHERE nodoArbolId = ?";
-
             Connection connection = DriverManager.getConnection(url);
-    
             PreparedStatement statement = connection.prepareStatement(query);
     
             statement.setInt(1, id);
@@ -128,7 +123,8 @@ public class Database
         Integer causaId = null;
         List<String> arrayNodoInformation = new ArrayList<>();
     
-        try {
+        try 
+        {
             // Query para confirmar tipo de nodo
             String query = "SELECT tipoNodo, causaId FROM nodoArbol WHERE nodoArbolId = ?";
             
@@ -146,10 +142,13 @@ public class Database
             ResultSet resultSet = statement.executeQuery();
     
             // Obtener tipoNodo y causaId
-            if (resultSet.next()) {
+            if (resultSet.next()) 
+            {
                 tipoNodo = resultSet.getString("tipoNodo");
                 causaId = resultSet.getInt("causaId");
-            } else {
+            } 
+            else 
+            {
                 System.out.println("Nodo no encontrado para nodoArbolId: " + nodoArbolId);
                 return arrayNodoInformation;
             }
@@ -157,7 +156,8 @@ public class Database
             // Preparar consultas específicas
             PreparedStatement detailStatement = null;
     
-            switch (tipoNodo) {
+            switch (tipoNodo) 
+            {
                 case "activos":
                 case "Nodo de activos":
                     detailStatement = connection.prepareStatement(activosQuery);
@@ -186,9 +186,11 @@ public class Database
             if (detailStatement != null) 
             {
                 resultSet = detailStatement.executeQuery();
-                while (resultSet.next()) {
+                while (resultSet.next()) 
+                {
                     int columnCount = resultSet.getMetaData().getColumnCount();
-                    for (int i = 1; i <= columnCount; i++) {
+                    for (int i = 1; i <= columnCount; i++) 
+                    {
                         String columnName = resultSet.getMetaData().getColumnLabel(i);
                         String columnValue = resultSet.getString(i);
                         arrayNodoInformation.add(columnValue);
@@ -201,8 +203,9 @@ public class Database
             resultSet.close();
             statement.close();
             connection.close();
-    
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
         }
     
@@ -210,8 +213,6 @@ public class Database
     }
 
     // Método para obtener los nombres de la columna "nombre"
-
-    /* */
     public String getNameFromNodoArbol(Integer nodoArbolId) 
     {
         String nombre = "";
@@ -225,9 +226,6 @@ public class Database
             preparedStatement.setInt(1, nodoArbolId);
 
             ResultSet resultSet = preparedStatement.executeQuery();
-
-
-
             while (resultSet.next()) 
             {
                 nombre = resultSet.getString("nombre");
@@ -240,7 +238,6 @@ public class Database
         return nombre;
     }
 
-
     public Integer getNodoArbolIdByName(DefaultMutableTreeNode selectedNode) 
     {
         Integer nodoArbolId = null; // Variable para almacenar el resultado
@@ -249,7 +246,6 @@ public class Database
         {
             // Extraer el nombre desde el nodo seleccionado
             String nombre = selectedNode.getUserObject().toString();
-
             String query = "SELECT nodoArbolId FROM nodoarbol WHERE nombre = ?";
 
             try
@@ -290,33 +286,36 @@ public class Database
 
     
 // metodos para acceder a los valores de los formularios
-
-
     public Map<String, String> getActivoDetails(int activoId) 
     {
         Map<String, String> activoDetails = new HashMap<>();
-
         String query = "SELECT tipo, estado, monitor FROM activos WHERE activoId = ?";
 
-        try (Connection connection = DriverManager.getConnection(url);
-            PreparedStatement preparedStatement = connection.prepareStatement(query)) 
-            {
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
 
             // Configurar el parámetro activoId
             preparedStatement.setInt(1, activoId);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            
+                if (resultSet.next()) 
+                {
                     // Extraer los valores de las columnas
                     activoDetails.put("tipo", resultSet.getString("tipo"));
                     activoDetails.put("estado", resultSet.getString("estado"));
                     activoDetails.put("monitor", resultSet.getString("monitor"));
-                } else {
+                } 
+                else 
+                {
                     System.out.println("No se encontró ningún registro con el activoId: " + activoId);
                 }
-            }
+            
 
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
         }
 
@@ -327,20 +326,26 @@ public class Database
         Map<String, String> variableDetails = new HashMap<>();
 
         String query = "SELECT tipo, activoId FROM variablescontexto WHERE VariableId = ?";
-        try (Connection connection = DriverManager.getConnection(url);
-            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, variableId);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+                if (resultSet.next()) 
+                {
                     variableDetails.put("tipo", resultSet.getString("tipo"));
                     variableDetails.put("activoId", resultSet.getString("activoId"));
-                } else {
+                } 
+                else 
+                {
                     System.out.println("No se encontró ningún registro con el VariableId: " + variableId);
                 }
-            }
-        } catch (SQLException e) {
+            
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
         }
 
@@ -352,19 +357,25 @@ public class Database
         Map<String, String> sentenciaDetails = new HashMap<>();
     
         String query = "SELECT estado FROM sentencias WHERE sentenciaId = ?";
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-    
+        try 
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, sentenciaId);
-    
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            
+                if (resultSet.next()) 
+                {
                     sentenciaDetails.put("estado", resultSet.getString("estado"));
-                } else {
+                } 
+                else 
+                {
                     System.out.println("No se encontró ningún registro con el sentenciaId: " + sentenciaId);
                 }
-            }
-        } catch (SQLException e) {
+            
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
         }
     
@@ -373,21 +384,22 @@ public class Database
 
 
     //metodos para actualizar los datos de los formularios
-
     public boolean updateActivoDetails(int activoId, String tipo, String estado, String monitor) {
         String query = "UPDATE activos SET tipo = ?, estado = ?, monitor = ? WHERE activoId = ?";
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-    
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, tipo);
             preparedStatement.setString(2, estado);
             preparedStatement.setString(3, monitor);
             preparedStatement.setInt(4, activoId);
     
             int rowsUpdated = preparedStatement.executeUpdate();
-            System.out.println(rowsUpdated + " se actualizzz");
             return rowsUpdated > 0; // Retorna true si se actualizó al menos una fila
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
             return false;
         }
@@ -398,17 +410,20 @@ public class Database
     {
         String query = "UPDATE variablescontexto SET tipo = ?, activoId = ? WHERE VariableId = ?";
     
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-    
+        try  
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, tipo);
             preparedStatement.setInt(2, Integer.parseInt(activoId));
             preparedStatement.setInt(3, variableId);
-    
+
             int rowsUpdated = preparedStatement.executeUpdate();
             return rowsUpdated > 0;
     
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
             return false;
         }
@@ -416,23 +431,53 @@ public class Database
     
 
 
-    public boolean updateSentenciaEstado(int sentenciaId, String estado) {
+    public boolean updateSentenciaEstado(int sentenciaId, String estado) 
+    {
         String updateQuery = "UPDATE sentencias SET estado = ? WHERE sentenciaId = ?";
-    
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-    
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
             preparedStatement.setString(1, estado);
             preparedStatement.setInt(2, sentenciaId);
     
             int rowsUpdated = preparedStatement.executeUpdate();
             return rowsUpdated > 0;
     
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public boolean saveNuevoNodo(String tipoNodo, Map<String, String> valores) 
+    {
+        String query = "INSERT INTO nodoarbol (tipoNodo, tipoExpresion, opcionTF, ...) VALUES (?, ?, ?, ...)";
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    
+            preparedStatement.setString(1, tipoNodo);
+    
+            // Rellenar los campos dinámicos
+            int index = 2;
+            for (String key : valores.keySet()) {
+                preparedStatement.setString(index, valores.get(key));
+                index++;
+            }
+    
+            int rowsInserted = preparedStatement.executeUpdate();
+            return rowsInserted > 0;
+    
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+    
     
     
     

@@ -3,14 +3,24 @@ package tree;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -18,7 +28,7 @@ import javax.swing.tree.DefaultTreeModel;
 
 public class Interfaz extends JFrame 
 {
-    private JPanel formPanel; // Panel derecho para el formulario dinámico
+    protected JPanel formPanel; // Panel derecho para el formulario dinámico
 
     // Color verde para el fondo
     private static final Color BACKGROUND_COLOR = new Color(184, 211, 173);
@@ -27,7 +37,6 @@ public class Interfaz extends JFrame
     private Map<Integer, String> nodosHijosMap = new HashMap<>();
     private Map<Integer, String> nombresNodosMap = new HashMap<>();
 
-
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
 
@@ -35,54 +44,175 @@ public class Interfaz extends JFrame
     private Forms forms;
 
     public Interfaz() 
-    {
-        // Inicializar base de datos y formularios
-        this.querys = new Database();
-        this.forms = new Forms();
+{
+    // Inicializar base de datos y formularios
+    this.querys = new Database();
+    this.forms = new Forms();
 
-        // Configuración inicial de la ventana
-        setTitle("Árbol N-ario");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+    // Configuración inicial de la ventana
+    setTitle("Árbol N-ario");
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setSize(800, 600);
+    setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Crear el modelo del árbol
-        root = new DefaultMutableTreeNode();
-        tree = new JTree(root);
+    // Crear el modelo del árbol
+    root = new DefaultMutableTreeNode();
+    tree = new JTree(root);
 
-        // Configurar el JTree
-        tree.setBackground(BACKGROUND_COLOR);
-        tree.setFont(new Font("Arial", Font.PLAIN, 30));
-        tree.setShowsRootHandles(true);
+    // Configurar el JTree
+    tree.setBackground(BACKGROUND_COLOR);
+    tree.setFont(new Font("Arial", Font.PLAIN, 30));
+    tree.setShowsRootHandles(true);
 
-        // Configurar panel derecho para formularios
-        formPanel = new JPanel();
-        formPanel.setLayout(new BorderLayout()); // Usar BorderLayout para ajustar componentes
-        formPanel.setBackground(new Color(184, 211, 173));
+    // Crear un panel para el árbol y el botón
+    JPanel treePanel = new JPanel();
+    treePanel.setLayout(new BorderLayout());
+    treePanel.setBackground(new Color(184, 211, 173));
 
-        // Dividir la pantalla
-        JScrollPane treeScrollPane = new JScrollPane(tree);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, formPanel);
-        splitPane.setDividerLocation(300); // Tamaño inicial del panel izquierdo
-        splitPane.setResizeWeight(0.3); // Prioridad al redimensionar
-        add(splitPane);
+    // Añadir el árbol al panel
+    JScrollPane treeScrollPane = new JScrollPane(tree);
+    treePanel.add(treeScrollPane, BorderLayout.CENTER);
 
-        // Probar la conexión a la base de datos
-        try {
-            querys.testDatabaseConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
+    // Crear el botón "Añadir Nodo"
+    JButton btnNuevoNodo = new JButton("Añadir Nodo");
+    btnNuevoNodo.setFont(new Font("Arial", Font.BOLD, 16));
+    btnNuevoNodo.setBackground(new Color(135, 206, 250)); // Color azul claro
+    btnNuevoNodo.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) 
+        {
+            formPanel.removeAll();
+            
+            // Cambiar el diseño del panel principal
+            formPanel.setLayout(new BorderLayout());
+            formPanel.setBorder(BorderFactory.createTitledBorder("Formulario Nombre y Tipo de Nodo"));
+            formPanel.setBackground(new Color(184, 211, 173));
+
+// Crear un panel secundario para los campos generales
+JPanel formularioPanel = new JPanel(new GridBagLayout());
+formularioPanel.setBackground(new Color(184, 211, 173));
+GridBagConstraints gbc = new GridBagConstraints();
+gbc.insets = new Insets(10, 10, 10, 10);
+gbc.fill = GridBagConstraints.HORIZONTAL;
+
+// Panel dinámico para los formularios específicos
+JPanel dynamicFormPanel = new JPanel(new GridBagLayout());
+dynamicFormPanel.setBackground(new Color(184, 211, 173));
+
+// Configurar los campos del formulario principal
+JLabel lblNombre = new JLabel("Nombre:");
+JTextField txtNombre = new JTextField(20);
+
+JLabel lblTipoNodo = new JLabel("Tipo de Nodo:");
+JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
+//String opcionPorDefecto = (String) comboTipoNodo.getSelectedItem();
+
+
+    // Crear el mapa en memoria para almacenar la última opción seleccionada
+    Map<Integer, String> mapaOpcionesMemoria = new HashMap<>();
+
+    // Obtener la opción por defecto
+    String selectedOption = (String) comboTipoNodo.getSelectedItem();
+
+    // Almacenar la opción por defecto en el mapa
+    mapaOpcionesMemoria.put(1, selectedOption);
+
+    // Lógica para mostrar el formulario inicial basado en la opción preseleccionada
+    mostrarFormularioSeleccionado(selectedOption, dynamicFormPanel);
+
+// Añadir un ActionListener al JComboBox para manejar la selección
+comboTipoNodo.addActionListener(event -> {
+
+ // Obtener la nueva opción seleccionada
+ String nuevaOpcion = (String) comboTipoNodo.getSelectedItem();
+ String opcionAnterior = mapaOpcionesMemoria.get(1);
+
+ // Verificar si la opción ha cambiado
+ if (!nuevaOpcion.equals(opcionAnterior)) {
+     System.out.println("La opción ha cambiado de: " + opcionAnterior + " a: " + nuevaOpcion);
+
+     // Actualizar la memoria con la nueva opción
+     mapaOpcionesMemoria.put(1, nuevaOpcion);
+
+     // Mostrar el formulario correspondiente a la nueva opción
+     mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
+ }
+
+
+});
+
+JButton btnGuardar = new JButton("Guardar");
+
+// Añadir componentes al formularioPanel
+gbc.gridx = 0;
+gbc.gridy = 0;
+formularioPanel.add(lblNombre, gbc);
+
+gbc.gridx = 1;
+formularioPanel.add(txtNombre, gbc);
+
+gbc.gridx = 0;
+gbc.gridy = 1;
+formularioPanel.add(lblTipoNodo, gbc);
+
+gbc.gridx = 1;
+formularioPanel.add(comboTipoNodo, gbc);
+
+// Añadir el dynamicFormPanel al formulario principal
+gbc.gridx = 0;
+gbc.gridy = 2;
+gbc.gridwidth = 2; // Hacer que el dynamicFormPanel ocupe todo el ancho
+formularioPanel.add(dynamicFormPanel, gbc);
+
+// Añadir el botón Guardar al final
+gbc.gridx = 0;
+gbc.gridy = 3;
+gbc.gridwidth = 2; // Hacer que el botón esté centrado
+gbc.anchor = GridBagConstraints.CENTER;
+formularioPanel.add(btnGuardar, gbc);
+
+// Agregar el formulario principal al centro del formPanel
+formPanel.add(formularioPanel, BorderLayout.CENTER);
+
+// Refrescar el formPanel
+formPanel.revalidate();
+formPanel.repaint();
+
         }
+    }); // Acción al hacer clic
+    treePanel.add(btnNuevoNodo, BorderLayout.SOUTH); // Añadir el botón en la parte inferior
 
-        // Cargar datos del árbol
-        //ObtenerNodosPadres();
-        createTreeModel();
+    // Configurar el panel derecho para formularios
+    formPanel = new JPanel();
+    formPanel.setLayout(new BorderLayout()); // Usar BorderLayout para ajustar componentes
+    formPanel.setBackground(new Color(184, 211, 173));
 
-        setLocationRelativeTo(null);
+    // Dividir la pantalla
+    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel, formPanel);
+    splitPane.setDividerLocation(300); // Tamaño inicial del panel izquierdo
+    splitPane.setResizeWeight(0.3); // Prioridad al redimensionar
+    add(splitPane);
+
+    // Probar la conexión a la base de datos
+    try 
+    {
+        querys.testDatabaseConnection();
+    } 
+    catch (Exception e) 
+    {
+        e.printStackTrace();
     }
+
+    // Cargar datos del árbol
+    createTreeModel();
+
+    setLocationRelativeTo(null);
+}
+
 
     private void createTreeModel() 
     {
+        
         List<String> queryGetParents = querys.findNodesParents();
 
         if (queryGetParents != null && !queryGetParents.isEmpty()) 
@@ -183,6 +313,45 @@ public class Interfaz extends JFrame
             }
         }
     }
+
+    public void mostrarFormularioSeleccionado(String selectedOption, JPanel dynamicFormPanel)
+    {
+        // Limpiar el dynamicFormPanel únicamente
+        dynamicFormPanel.removeAll();
+
+        switch (selectedOption) 
+        {
+            case "Enlace":
+                System.out.println("Opción seleccionada: Enlace.");
+                // Aquí puedes agregar un formulario para "Enlace"
+                break;
+
+            case "Activos":
+                System.out.println("Opción seleccionada: Activos.");
+                forms.activoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Activos"
+                break;
+
+            case "Variables":
+                System.out.println("Opción seleccionada: Variables.");
+                forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
+                break;
+
+            case "Sentencias":
+                System.out.println("Opción seleccionada: Sentencias.");
+                forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
+                break;
+
+            default:
+                System.out.println("Opción no reconocida: " + selectedOption);
+                break;
+        }
+
+        // Refrescar el dynamicFormPanel
+        dynamicFormPanel.revalidate();
+        dynamicFormPanel.repaint();
+    }
+
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
