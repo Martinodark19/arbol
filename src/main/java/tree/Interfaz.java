@@ -6,8 +6,11 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,7 @@ public class Interfaz extends JFrame
     private Map<Integer, String> nodosPadresMap = new HashMap<>();
     private Map<Integer, String> nodosHijosMap = new HashMap<>();
     private Map<Integer, String> nombresNodosMap = new HashMap<>();
+    
 
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
@@ -103,10 +107,19 @@ dynamicFormPanel.setBackground(new Color(184, 211, 173));
 JLabel lblNombre = new JLabel("Nombre:");
 JTextField txtNombre = new JTextField(20);
 
+txtNombre.addKeyListener(new KeyAdapter() {
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (txtNombre.getText().length() >= 50) { // Máximo 10 caracteres
+            e.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+});
+
 JLabel lblTipoNodo = new JLabel("Tipo de Nodo:");
 JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
 //String opcionPorDefecto = (String) comboTipoNodo.getSelectedItem();
-
 
     // Crear el mapa en memoria para almacenar la última opción seleccionada
     Map<Integer, String> mapaOpcionesMemoria = new HashMap<>();
@@ -123,60 +136,57 @@ JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Varia
 // Añadir un ActionListener al JComboBox para manejar la selección
 comboTipoNodo.addActionListener(event -> {
 
- // Obtener la nueva opción seleccionada
- String nuevaOpcion = (String) comboTipoNodo.getSelectedItem();
- String opcionAnterior = mapaOpcionesMemoria.get(1);
+    // Obtener la nueva opción seleccionada
+    String nuevaOpcion = (String) comboTipoNodo.getSelectedItem();
+    String opcionAnterior = mapaOpcionesMemoria.get(1);
 
- // Verificar si la opción ha cambiado
- if (!nuevaOpcion.equals(opcionAnterior)) {
-     System.out.println("La opción ha cambiado de: " + opcionAnterior + " a: " + nuevaOpcion);
+    // Verificar si la opción ha cambiado
+    if (!nuevaOpcion.equals(opcionAnterior)) 
+    {
+        // Actualizar la memoria con la nueva opción
+        mapaOpcionesMemoria.put(1, nuevaOpcion);
 
-     // Actualizar la memoria con la nueva opción
-     mapaOpcionesMemoria.put(1, nuevaOpcion);
+        // Mostrar el formulario correspondiente a la nueva opción
+        mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
+    }
+    });
 
-     // Mostrar el formulario correspondiente a la nueva opción
-     mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
- }
+    JButton btnGuardar = new JButton("Guardar");
 
+    // Añadir componentes al formularioPanel
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formularioPanel.add(lblNombre, gbc);
 
-});
+    gbc.gridx = 1;
+    formularioPanel.add(txtNombre, gbc);
 
-JButton btnGuardar = new JButton("Guardar");
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    formularioPanel.add(lblTipoNodo, gbc);
 
-// Añadir componentes al formularioPanel
-gbc.gridx = 0;
-gbc.gridy = 0;
-formularioPanel.add(lblNombre, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(comboTipoNodo, gbc);
 
-gbc.gridx = 1;
-formularioPanel.add(txtNombre, gbc);
+    // Añadir el dynamicFormPanel al formulario principal
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    gbc.gridwidth = 2; // Hacer que el dynamicFormPanel ocupe todo el ancho
+    formularioPanel.add(dynamicFormPanel, gbc);
 
-gbc.gridx = 0;
-gbc.gridy = 1;
-formularioPanel.add(lblTipoNodo, gbc);
+    // Añadir el botón Guardar al final
+    gbc.gridx = 0;
+    gbc.gridy = 3;
+    gbc.gridwidth = 2; // Hacer que el botón esté centrado
+    gbc.anchor = GridBagConstraints.CENTER;
+    formularioPanel.add(btnGuardar, gbc);
 
-gbc.gridx = 1;
-formularioPanel.add(comboTipoNodo, gbc);
+    // Agregar el formulario principal al centro del formPanel
+    formPanel.add(formularioPanel, BorderLayout.CENTER);
 
-// Añadir el dynamicFormPanel al formulario principal
-gbc.gridx = 0;
-gbc.gridy = 2;
-gbc.gridwidth = 2; // Hacer que el dynamicFormPanel ocupe todo el ancho
-formularioPanel.add(dynamicFormPanel, gbc);
-
-// Añadir el botón Guardar al final
-gbc.gridx = 0;
-gbc.gridy = 3;
-gbc.gridwidth = 2; // Hacer que el botón esté centrado
-gbc.anchor = GridBagConstraints.CENTER;
-formularioPanel.add(btnGuardar, gbc);
-
-// Agregar el formulario principal al centro del formPanel
-formPanel.add(formularioPanel, BorderLayout.CENTER);
-
-// Refrescar el formPanel
-formPanel.revalidate();
-formPanel.repaint();
+    // Refrescar el formPanel
+    formPanel.revalidate();
+    formPanel.repaint();
 
         }
     }); // Acción al hacer clic
@@ -209,7 +219,6 @@ formPanel.repaint();
     setLocationRelativeTo(null);
 }
 
-
     private void createTreeModel() 
     {
         
@@ -222,7 +231,6 @@ formPanel.repaint();
             for (String parentId : queryGetParents) 
             {
                 String getNamesFromNodos = querys.getNameFromNodoArbol(Integer.parseInt(parentId));
-
 
                 nombresNodosMap.put(Integer.parseInt(parentId), getNamesFromNodos);
 
@@ -351,7 +359,6 @@ formPanel.repaint();
         dynamicFormPanel.repaint();
     }
 
-    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

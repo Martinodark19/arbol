@@ -6,6 +6,9 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +45,8 @@ public class Forms
         panel.revalidate();
         panel.repaint();
     }
+
+    
 
     public void enlaceForm(List<String> informationActivosToShow, Integer nodoArbolId) 
     {
@@ -116,14 +121,11 @@ public class Forms
     {
         resetPanel();
 
-
-    
         // Cambiar el diseño a BorderLayout para separar el título del formulario
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Nodo de Activos"));
         panel.setBackground(new Color(184, 211, 173));
     
-
     
         // Crear otro panel para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
@@ -137,15 +139,13 @@ public class Forms
     
         // Campos del formulario
         JLabel lblTipo = new JLabel("Tipo:");
-        JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Hardware", "Software", "Infraestructura", "Red", "Otro"});
+        JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Hard", "Software", "Infra", "Red", "Otro"});
     
         JLabel lblEstado = new JLabel("Estado:");
-        JComboBox<String> comboEstado = new JComboBox<>(new String[]{"Operativo", "Inactivo", "En Reparación", "Retirado", "Desconocido"});
+        JComboBox<String> comboEstado = new JComboBox<>(new String[]{"Operati", "Inactivo", "Reparaci", "Retirado", "Desco"});
     
         JLabel lblMonitor = new JLabel("Monitor (T/F):");
         JComboBox<String> comboMonitor = new JComboBox<>(new String[]{"T", "F"});
-
-
             
         // Obtener los valores actuales de la base de datos
         Map<String, String> activoDetails = querys.getActivoDetails(nodoArbolId);
@@ -237,6 +237,7 @@ public class Forms
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
         panel.setBackground(new Color(184, 211, 173));
+        
     
         // Crear un panel secundario para los campos del formulario
         JPanel formularioPanel = new JPanel(new GridBagLayout());
@@ -248,6 +249,18 @@ public class Forms
         // Configurar los campos del formulario
         JLabel lblTipoVC = new JLabel("Tipo:");
         JTextField txtTipoVC = new JTextField();
+        txtTipoVC.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo de texto
+
+        txtTipoVC.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtTipoVC.getText().length() >= 30) { // Máximo 10 caracteres
+                    e.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+        });
+
         JLabel lblActivoId = new JLabel("ActivoId:");
         JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3"});
 
@@ -357,9 +370,21 @@ public class Forms
         // Configurar los campos del formulario
         JLabel lblEstado = new JLabel("Estado:");
         JTextField txtEstado = new JTextField();
+
+        txtEstado.addKeyListener(new KeyAdapter() 
+        {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtEstado.getText().length() >= 20) { // Máximo 10 caracteres
+                    e.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+        });
+
         txtEstado.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo de texto
 
-            // Obtener los valores actuales de la base de datos
+        // Obtener los valores actuales de la base de datos
         Map<String, String> sentenciaDetails = querys.getSentenciaDetails(nodoArbolId);
 
         if (!sentenciaDetails.isEmpty()) 
@@ -509,6 +534,16 @@ public class Forms
         // Campos del formulario
         JLabel lblTipoVC = new JLabel("Tipo:");
         JTextField txtTipoVC = new JTextField(20);
+
+        txtTipoVC.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtTipoVC.getText().length() >= 30) { // Máximo 10 caracteres
+                    e.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+        });
     
         JLabel lblActivoId = new JLabel("ActivoId:");
         JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3", "ALL"});
@@ -557,6 +592,16 @@ public class Forms
         // Configurar los campos del formulario
         JLabel lblEstado = new JLabel("Estado:");
         JTextField txtEstado = new JTextField(20);
+
+        txtEstado.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtEstado.getText().length() >= 10) { // Máximo 10 caracteres
+                    e.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+        });
     
         // Añadir componentes al formularioPanel
         gbc.gridx = 0;
