@@ -20,13 +20,23 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import tree.getters.ActivoFormSimplificadoGetter;
+import tree.getters.SentenciasFormSimplificadoGetter;
+import tree.getters.VariablesContextoSimplificadoGetter;
+
 public class Forms 
 {
     private JPanel panel; // Panel principal para los formularios
     private Database querys;
+    private ActivoFormSimplificadoGetter activoFormSimplificadoGetter;
+    private VariablesContextoSimplificadoGetter variablesContextoSimplificadoGetter;
+    private SentenciasFormSimplificadoGetter sentenciasFormSimplificadoGetter;
 
-    public Forms() 
+    public Forms(ActivoFormSimplificadoGetter activoFormSimplificadoGetter, VariablesContextoSimplificadoGetter variablesContextoSimplificadoGetter,SentenciasFormSimplificadoGetter sentenciasFormSimplificadoGetter) 
     {
+        this.activoFormSimplificadoGetter = activoFormSimplificadoGetter;
+        this.variablesContextoSimplificadoGetter = variablesContextoSimplificadoGetter;
+        this.sentenciasFormSimplificadoGetter = sentenciasFormSimplificadoGetter;
         this.querys = new Database(); // Inicializar instancia de Database
 
         panel = new JPanel();
@@ -428,7 +438,6 @@ public class Forms
             if (isUpdated) 
             {
                 JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
-                
                 // Recargar el campo con los datos actualizados
                 Map<String, String> updatedDetails = querys.getSentenciaDetails(nodoArbolId);
                 if (!updatedDetails.isEmpty()) 
@@ -455,170 +464,226 @@ public class Forms
         panel.repaint();
     }
 
-    //formularios para agregar nuevos nodos
-
-    public void activoFormSimplificado(JPanel panel) 
-    {
-        // Reiniciar el panel recibido
-        panel.removeAll();
-    
-        // Cambiar el diseño del panel principal
-        panel.setLayout(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Formulario Nodo de Activos"));
-        panel.setBackground(new Color(184, 211, 173));
-    
-        // Crear un panel secundario para los campos del formulario
-        JPanel formularioPanel = new JPanel(new GridBagLayout());
-        formularioPanel.setBackground(new Color(184, 211, 173));
-    
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-    
-        // Campos del formulario
-        JLabel lblTipo = new JLabel("Tipo:");
-        JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Hardware", "Software", "Infraestructura", "Red", "Otro"});
-    
-        JLabel lblEstado = new JLabel("Estado:");
-        JComboBox<String> comboEstado = new JComboBox<>(new String[]{"Operativo", "Inactivo", "En Reparación", "Retirado", "Desconocido"});
-    
-        JLabel lblMonitor = new JLabel("Monitor (T/F):");
-        JComboBox<String> comboMonitor = new JComboBox<>(new String[]{"T", "F"});
-    
-        // Añadir componentes al formularioPanel
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formularioPanel.add(lblTipo, gbc);
-        gbc.gridx = 1;
-        formularioPanel.add(comboTipo, gbc);
-    
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        formularioPanel.add(lblEstado, gbc);
-        gbc.gridx = 1;
-        formularioPanel.add(comboEstado, gbc);
-    
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        formularioPanel.add(lblMonitor, gbc);
-        gbc.gridx = 1;
-        formularioPanel.add(comboMonitor, gbc);
-    
-        // Agregar el formulario al centro del panel recibido
-        panel.add(formularioPanel, BorderLayout.CENTER);
-    
-        // Refrescar el panel
-        panel.revalidate();
-        panel.repaint();
-    }
-    
+ // Formularios para agregar nuevos nodos
+public void activoFormSimplificado(JPanel panel) 
+{
     
 
+    // Reiniciar el panel recibido
+    resetPanel();
+    panel.setLayout(new BorderLayout());
+    panel.setBorder(BorderFactory.createTitledBorder("Formulario Nodo de Activos"));
+    panel.setBackground(new Color(184, 211, 173));
 
-    public void VariablesContextoFormSimplificado(JPanel panel) {
-        // Reiniciar el panel
-        resetPanel();
-    
-        // Cambiar el diseño del panel principal
-        panel.setLayout(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
-        panel.setBackground(new Color(184, 211, 173));
-    
-        // Crear un panel secundario para los campos del formulario
-        JPanel formularioPanel = new JPanel(new GridBagLayout());
-        formularioPanel.setBackground(new Color(184, 211, 173));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-    
-        // Campos del formulario
-        JLabel lblTipoVC = new JLabel("Tipo:");
-        JTextField txtTipoVC = new JTextField(20);
+    // Crear un panel secundario para los campos del formulario
+    JPanel formularioPanel = new JPanel(new GridBagLayout());
+    formularioPanel.setBackground(new Color(184, 211, 173));
 
-        txtTipoVC.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (txtTipoVC.getText().length() >= 30) { // Máximo 10 caracteres
-                    e.consume();
-                    Toolkit.getDefaultToolkit().beep();
-                }
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    // Campos del formulario
+    JLabel lblTipo = new JLabel("Tipo:");
+    JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Har", "Software", "Infra", "Red", "Otro"});
+    JLabel lblEstado = new JLabel("Estado:");
+    JComboBox<String> comboEstado = new JComboBox<>(new String[]{"Opera", "Inac", "En Rep", "Reti", "Desc"});
+    JLabel lblMonitor = new JLabel("Monitor (T/F):");
+    JComboBox<String> comboMonitor = new JComboBox<>(new String[]{"T", "F"});
+
+        // Antes de agregar los ActionListeners
+    activoFormSimplificadoGetter.setTipo((String) comboTipo.getSelectedItem());
+    activoFormSimplificadoGetter.setEstado((String) comboEstado.getSelectedItem());
+    activoFormSimplificadoGetter.setMonitor((String) comboMonitor.getSelectedItem());
+
+
+
+    // Registrar ActionListeners para detectar cambios en los JComboBox
+    comboTipo.addActionListener(e -> {
+        String selectedTipo = (String) comboTipo.getSelectedItem();
+        activoFormSimplificadoGetter.setTipo(selectedTipo);
+        System.out.println("Tipo cambiado: " + selectedTipo);
+    });
+
+    comboEstado.addActionListener(e -> {
+        String selectedEstado = (String) comboEstado.getSelectedItem();
+        activoFormSimplificadoGetter.setEstado(selectedEstado);
+        System.out.println("Estado cambiado: " + selectedEstado);
+    });
+
+    comboMonitor.addActionListener(e -> {
+        String selectedMonitor = (String) comboMonitor.getSelectedItem();
+        activoFormSimplificadoGetter.setMonitor(selectedMonitor);
+        System.out.println("Monitor cambiado: " + selectedMonitor);
+    });
+
+    // Añadir componentes al formularioPanel
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formularioPanel.add(lblTipo, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(comboTipo, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    formularioPanel.add(lblEstado, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(comboEstado, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    formularioPanel.add(lblMonitor, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(comboMonitor, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 3;
+    gbc.gridwidth = 2;
+    gbc.anchor = GridBagConstraints.CENTER;
+
+    // Agregar el formulario al centro del panel recibido
+    panel.add(formularioPanel, BorderLayout.CENTER);
+
+    // Refrescar el panel
+    panel.revalidate();
+    panel.repaint();
+
+}
+
+    
+    
+
+
+    public void VariablesContextoFormSimplificado(JPanel panel) 
+{
+    // Reiniciar el panel
+    resetPanel();
+
+    // Cambiar el diseño del panel principal
+    panel.setLayout(new BorderLayout());
+    panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
+    panel.setBackground(new Color(184, 211, 173));
+
+    // Crear un panel secundario para los campos del formulario
+    JPanel formularioPanel = new JPanel(new GridBagLayout());
+    formularioPanel.setBackground(new Color(184, 211, 173));
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    // Campos del formulario
+    JLabel lblTipoVC = new JLabel("Tipo:");
+    JTextField txtTipoVC = new JTextField(20);
+
+    // Listener para actualizar el getter al escribir en txtTipoVC
+    txtTipoVC.addKeyListener(new KeyAdapter() {
+        @Override
+        public void keyReleased(KeyEvent e) {
+            variablesContextoSimplificadoGetter.setTipoVC(txtTipoVC.getText());
+            System.out.println("Tipo actualizado: " + variablesContextoSimplificadoGetter.getTipoVC());
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+            if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
+                e.consume();
+                Toolkit.getDefaultToolkit().beep();
+
             }
-        });
-    
-        JLabel lblActivoId = new JLabel("ActivoId:");
-        JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3", "ALL"});
-    
-        // Añadir componentes al formularioPanel
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formularioPanel.add(lblTipoVC, gbc);
-        gbc.gridx = 1;
-        formularioPanel.add(txtTipoVC, gbc);
-    
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        formularioPanel.add(lblActivoId, gbc);
-        gbc.gridx = 1;
-        formularioPanel.add(comboActivoId, gbc);
-    
-        // Agregar el formulario al centro del panel principal
-        panel.add(formularioPanel, BorderLayout.CENTER);
-    
-        // Refrescar el panel
-        panel.revalidate();
-        panel.repaint();
-    }
+        }
+    });
+
+    JLabel lblActivoId = new JLabel("ActivoId:");
+    JComboBox<String> comboActivoId = new JComboBox<>(new String[]{"1", "2", "3", "ALL"});
+
+    // Listener para actualizar el getter al cambiar la selección en comboActivoId
+    comboActivoId.addActionListener(e -> {
+        variablesContextoSimplificadoGetter.setActivoId((String) comboActivoId.getSelectedItem());
+        System.out.println("ActivoId actualizado: " + variablesContextoSimplificadoGetter.getActivoId());
+    });
+
+    // Añadir componentes al formularioPanel
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formularioPanel.add(lblTipoVC, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(txtTipoVC, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    formularioPanel.add(lblActivoId, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(comboActivoId, gbc);
+
+    // Agregar el formulario al centro del panel principal
+    panel.add(formularioPanel, BorderLayout.CENTER);
+
+    // Refrescar el panel
+    panel.revalidate();
+    panel.repaint();
+}
+
     
 
 
 
-    public void SentenciasFormSimplificado(JPanel panel) 
+public void SentenciasFormSimplificado(JPanel panel) 
+{
+    // Reiniciar el panel
+    resetPanel();
+
+    // Cambiar el diseño del panel principal
+    panel.setLayout(new BorderLayout());
+    panel.setBorder(BorderFactory.createTitledBorder("Formulario Sentencias"));
+    panel.setBackground(new Color(184, 211, 173));
+
+    // Crear un panel secundario para los campos del formulario
+    JPanel formularioPanel = new JPanel(new GridBagLayout());
+    formularioPanel.setBackground(new Color(184, 211, 173));
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    // Configurar los campos del formulario
+    JLabel lblEstado = new JLabel("Estado:");
+    JTextField txtEstado = new JTextField(20);
+
+    // Listener para actualizar el getter al escribir en txtEstado
+    txtEstado.addKeyListener(new KeyAdapter() 
     {
-        // Reiniciar el panel
-        resetPanel();
-    
-        // Cambiar el diseño del panel principal
-        panel.setLayout(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Formulario Sentencias"));
-        panel.setBackground(new Color(184, 211, 173));
-    
-        // Crear un panel secundario para los campos del formulario
-        JPanel formularioPanel = new JPanel(new GridBagLayout());
-        formularioPanel.setBackground(new Color(184, 211, 173));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-    
-        // Configurar los campos del formulario
-        JLabel lblEstado = new JLabel("Estado:");
-        JTextField txtEstado = new JTextField(20);
+        @Override
+        public void keyReleased(KeyEvent e) 
+        {
+            sentenciasFormSimplificadoGetter.setEstado(txtEstado.getText());
+            System.out.println("Estado actualizado: " + sentenciasFormSimplificadoGetter.getEstado());
+        }
 
-        txtEstado.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (txtEstado.getText().length() >= 10) { // Máximo 10 caracteres
-                    e.consume();
-                    Toolkit.getDefaultToolkit().beep();
-                }
+        @Override
+        public void keyTyped(KeyEvent e) {
+            if (txtEstado.getText().length() >= 10) { // Máximo 10 caracteres
+                e.consume();
+                Toolkit.getDefaultToolkit().beep();
             }
-        });
-    
-        // Añadir componentes al formularioPanel
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formularioPanel.add(lblEstado, gbc);
-    
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2; // Hacer que el campo de texto ocupe todo el ancho
-        formularioPanel.add(txtEstado, gbc);
-    
-        // Agregar el formulario al centro del panel principal
-        panel.add(formularioPanel, BorderLayout.CENTER);
-    
-        // Refrescar el panel
-        panel.revalidate();
-        panel.repaint();
-    }
+        }
+    });
+
+    // Añadir componentes al formularioPanel
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formularioPanel.add(lblEstado, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    gbc.gridwidth = 2; // Hacer que el campo de texto ocupe todo el ancho
+    formularioPanel.add(txtEstado, gbc);
+
+    // Agregar el formulario al centro del panel principal
+    panel.add(formularioPanel, BorderLayout.CENTER);
+
+    // Refrescar el panel
+    panel.revalidate();
+    panel.repaint();
+}
+
     
 }

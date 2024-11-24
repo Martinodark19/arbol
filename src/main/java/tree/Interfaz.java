@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import tree.getters.ActivoFormSimplificadoGetter;
+import tree.getters.SentenciasFormSimplificadoGetter;
+import tree.getters.VariablesContextoSimplificadoGetter;
+
 public class Interfaz extends JFrame 
 {
     protected JPanel formPanel; // Panel derecho para el formulario dinámico
@@ -39,19 +44,28 @@ public class Interfaz extends JFrame
     private Map<Integer, String> nodosPadresMap = new HashMap<>();
     private Map<Integer, String> nodosHijosMap = new HashMap<>();
     private Map<Integer, String> nombresNodosMap = new HashMap<>();
-    
 
+    //lista para almacenar datos de formularios de creacion de nodos
+    private List<String> listaDatosTipoNodo = new ArrayList<>();
+    
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
 
     // Clase que contiene los formularios respecto al tipo de nodo
     private Forms forms;
+    private ActivoFormSimplificadoGetter activoFormSimplificadoGetter;
+    private VariablesContextoSimplificadoGetter variablesContextoSimplificadoGetter;
+    private SentenciasFormSimplificadoGetter sentenciasFormSimplificadoGetter;
 
     public Interfaz() 
 {
+    // Inicializar ActivoFormSimplificadoGetter antes de pasarlo a Forms
+    this.activoFormSimplificadoGetter = new ActivoFormSimplificadoGetter();
+    this.variablesContextoSimplificadoGetter = new VariablesContextoSimplificadoGetter();
+    this.sentenciasFormSimplificadoGetter = new SentenciasFormSimplificadoGetter();
     // Inicializar base de datos y formularios
     this.querys = new Database();
-    this.forms = new Forms();
+    this.forms = new Forms(activoFormSimplificadoGetter,variablesContextoSimplificadoGetter,sentenciasFormSimplificadoGetter);
 
     // Configuración inicial de la ventana
     setTitle("Árbol N-ario");
@@ -107,7 +121,8 @@ dynamicFormPanel.setBackground(new Color(184, 211, 173));
 JLabel lblNombre = new JLabel("Nombre:");
 JTextField txtNombre = new JTextField(20);
 
-txtNombre.addKeyListener(new KeyAdapter() {
+txtNombre.addKeyListener(new KeyAdapter() 
+{
     @Override
     public void keyTyped(KeyEvent e) {
         if (txtNombre.getText().length() >= 50) { // Máximo 10 caracteres
@@ -119,10 +134,10 @@ txtNombre.addKeyListener(new KeyAdapter() {
 
 JLabel lblTipoNodo = new JLabel("Tipo de Nodo:");
 JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
-//String opcionPorDefecto = (String) comboTipoNodo.getSelectedItem();
 
     // Crear el mapa en memoria para almacenar la última opción seleccionada
     Map<Integer, String> mapaOpcionesMemoria = new HashMap<>();
+    Map<Integer, String> mapaOpcionesTipoNodo = new HashMap<>();
 
     // Obtener la opción por defecto
     String selectedOption = (String) comboTipoNodo.getSelectedItem();
@@ -130,8 +145,12 @@ JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Varia
     // Almacenar la opción por defecto en el mapa
     mapaOpcionesMemoria.put(1, selectedOption);
 
+    
+
     // Lógica para mostrar el formulario inicial basado en la opción preseleccionada
-    mostrarFormularioSeleccionado(selectedOption, dynamicFormPanel);
+    List<String> resultadosTipoNodo = mostrarFormularioSeleccionado(selectedOption, dynamicFormPanel);
+    
+//en el map debemos insertar con el siguiente orden 1=tipo,2=estado,3=monitor
 
 // Añadir un ActionListener al JComboBox para manejar la selección
 comboTipoNodo.addActionListener(event -> {
@@ -145,13 +164,26 @@ comboTipoNodo.addActionListener(event -> {
     {
         // Actualizar la memoria con la nueva opción
         mapaOpcionesMemoria.put(1, nuevaOpcion);
-
+        System.out.println(mapaOpcionesMemoria.get(1));
         // Mostrar el formulario correspondiente a la nueva opción
         mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
     }
     });
 
     JButton btnGuardar = new JButton("Guardar");
+    btnGuardar.addActionListener(event -> {
+
+        // Obtener los valores del formulario
+        String nombre = txtNombre.getText();
+        String tipoNodo = (String) comboTipoNodo.getSelectedItem();
+    
+        // Mostrar un mensaje en consola con los datos
+        System.out.println("Guardando datos...");
+        System.out.println("Nombre: " + nombre);
+        System.out.println("Tipo de Nodo: " + tipoNodo);
+        System.out.println("esto le enviaremos a la bd");
+        System.out.println(sentenciasFormSimplificadoGetter.getEstado());
+    });
 
     // Añadir componentes al formularioPanel
     gbc.gridx = 0;
@@ -215,13 +247,11 @@ comboTipoNodo.addActionListener(event -> {
 
     // Cargar datos del árbol
     createTreeModel();
-
     setLocationRelativeTo(null);
 }
 
     private void createTreeModel() 
     {
-        
         List<String> queryGetParents = querys.findNodesParents();
 
         if (queryGetParents != null && !queryGetParents.isEmpty()) 
@@ -234,7 +264,6 @@ comboTipoNodo.addActionListener(event -> {
 
                 nombresNodosMap.put(Integer.parseInt(parentId), getNamesFromNodos);
 
-                
                 //ahora preguntaremos en el map nombresNodosMap por el parentId para obtener el nombre del nodo
 
                 if (!mapaNodos.containsKey(Integer.parseInt(parentId))) 
@@ -243,7 +272,6 @@ comboTipoNodo.addActionListener(event -> {
 
                         mapaNodos.put(Integer.parseInt(parentId), nodoPadre);
                         root.add(nodoPadre);
-
                         construirHijos(parentId, nodoPadre, mapaNodos);
                     
                 }
@@ -267,7 +295,6 @@ comboTipoNodo.addActionListener(event -> {
                 Integer nodoArbolId = Integer.parseInt(findNodoArbolIdFromName.toString());
 
                 List<String> causeId = querys.getDataForNodoArbol(nodoArbolId);
-                System.out.println("aqui esta el causeID" + causeId);
                 
                 // Limpiar el panel derecho antes de agregar un nuevo formulario
                 formPanel.removeAll();
@@ -301,8 +328,6 @@ comboTipoNodo.addActionListener(event -> {
                 formPanel.revalidate();
                 formPanel.repaint();
             }
-
-
         });
     }
 
@@ -322,7 +347,9 @@ comboTipoNodo.addActionListener(event -> {
         }
     }
 
-    public void mostrarFormularioSeleccionado(String selectedOption, JPanel dynamicFormPanel)
+    List<String> resultados;
+
+    public List<String> mostrarFormularioSeleccionado(String selectedOption, JPanel dynamicFormPanel)
     {
         // Limpiar el dynamicFormPanel únicamente
         dynamicFormPanel.removeAll();
@@ -336,9 +363,10 @@ comboTipoNodo.addActionListener(event -> {
 
             case "Activos":
                 System.out.println("Opción seleccionada: Activos.");
-                forms.activoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Activos"
+                forms.activoFormSimplificado(dynamicFormPanel);
+                System.out.println(resultados);
                 break;
-
+                    
             case "Variables":
                 System.out.println("Opción seleccionada: Variables.");
                 forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
@@ -357,6 +385,8 @@ comboTipoNodo.addActionListener(event -> {
         // Refrescar el dynamicFormPanel
         dynamicFormPanel.revalidate();
         dynamicFormPanel.repaint();
+
+        return resultados;
     }
 
 

@@ -15,7 +15,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 public class Database
 {
   //remplazar aqui su base de datos
-  String url = "jdbc:sqlserver://localhost:1433;databaseName=arbol_db;integratedSecurity=true;encrypt=false;";
+  private String url = "jdbc:sqlserver://localhost:1433;databaseName=arbol_db;integratedSecurity=true;encrypt=false;";
 
     public void testDatabaseConnection() throws SQLException, ClassNotFoundException 
     {
@@ -420,7 +420,6 @@ public class Database
 
             int rowsUpdated = preparedStatement.executeUpdate();
             return rowsUpdated > 0;
-    
         } 
         catch (SQLException e) 
         {
@@ -429,8 +428,6 @@ public class Database
         }
     }
     
-
-
     public boolean updateSentenciaEstado(int sentenciaId, String estado) 
     {
         String updateQuery = "UPDATE sentencias SET estado = ? WHERE sentenciaId = ?";
@@ -472,11 +469,66 @@ public class Database
             int rowsInserted = preparedStatement.executeUpdate();
             return rowsInserted > 0;
     
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) 
+        {
             e.printStackTrace();
             return false;
         }
     }
+
+    /* 
+
+    public void insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> arrayTipoNodo)                       
+    {
+        int causaIdAleatorio = (int) (Math.random() * 10) + 1;
+
+        try
+        {
+            switch (tipoNodo) 
+            {
+                case "Activos":
+                    String query = "INSERT INTO nodoArbol (tipoNodo, causaId, nombre) VALUES (?, ?, ?)";
+                    String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
+                    Connection connection = DriverManager.getConnection(url);
+
+                    //en el map debemos insertar con el siguiente orden 1=tipo,2=estado,3=monitor
+                    PreparedStatement preparedStatementQuery = connection.prepareStatement(query);
+                    PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo);
+
+                    //insert para tabla nodoArbol
+                    preparedStatementQuery.setString(1, tipoNodo);
+                    preparedStatementQuery.setInt(2, causaIdAleatorio);
+                    preparedStatementQuery.setString(3, nombre);
+
+                    //insert para Activos
+                    preparedStatementQueryActivo.setInt(1, causaIdAleatorio);
+                    preparedStatementQueryActivo.setString(2, arrayTipoNodo.get(1)));
+                    preparedStatementQueryActivo.setString(3, arrayTipoNodo.get(2));
+                    preparedStatementQueryActivo.setString(4,arrayTipoNodo.get(3));
+
+                    System.out.println("Preparando para insertar un nodo de tipo Activos.");
+                    break;
+                case "Variables":
+                    System.out.println("Preparando para insertar un nodo de tipo Variables.");
+                    break;
+                case "Sentencias":
+                    System.out.println("Preparando para insertar un nodo de tipo Sentencias.");
+                    break;
+                default:
+                    System.out.println("Tipo de nodo inválido: " + tipoNodo);
+                    return; // Salir del método si el tipoNodo no es válido
+            } 
+        }
+      
+        catch (SQLException e) 
+        {
+            System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
+        }
+    }
+
+    */
+    
     
     
     
