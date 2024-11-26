@@ -3,13 +3,31 @@ package tree.getters;
 public class SentenciasFormSimplificadoGetter 
 {
     private String estado;
+    private boolean disponibilidadForm;
 
+    // Getter para estado
     public String getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) 
-    {
+    // Setter para estado
+    public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    // Getter para disponibilidadForm
+    public boolean isDisponibilidadForm() {
+        return disponibilidadForm;
+    }
+
+    // Setter para disponibilidadForm
+    public void setDisponibilidadForm(boolean disponibilidadForm) {
+        this.disponibilidadForm = disponibilidadForm;
+    }
+
+    // Método para actualizar estado desde un componente
+    public void updateEstado(String nuevoEstado) {
+        this.estado = nuevoEstado;
+        System.out.println("Estado actualizado: " + this.estado);
     }
 }

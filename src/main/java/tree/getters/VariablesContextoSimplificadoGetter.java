@@ -1,15 +1,14 @@
 package tree.getters;
 
-
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 public class VariablesContextoSimplificadoGetter 
 {
-
     // Campos para almacenar los valores
     private String tipoVC;
-    private String activoId;
+    private Integer activoId;
+    private boolean disponibilidadForm; // Campo para disponibilidad del formulario
 
     // Getter para tipoVC
     public String getTipoVC() {
@@ -23,19 +22,30 @@ public class VariablesContextoSimplificadoGetter
     }
 
     // Getter para activoId
-    public String getActivoId() 
+    public Integer getActivoId() 
     {
         return activoId;
     }
 
     // Setter para activoId
-    public void setActivoId(String activoId) {
+    public void setActivoId(Integer activoId) {
         this.activoId = activoId;
     }
 
+    // Getter para disponibilidadForm
+    public boolean isDisponibilidadForm() {
+        return disponibilidadForm;
+    }
+
+    // Setter para disponibilidadForm
+    public void setDisponibilidadForm(boolean disponibilidadForm) {
+        this.disponibilidadForm = disponibilidadForm;
+    }
+
     // Método para actualizar valores directamente desde los componentes del formulario
-    public void updateFromForm(JTextField txtTipoVC, JComboBox<String> comboActivoId) {
+    public void updateFromForm(JTextField txtTipoVC, JComboBox<Integer> comboActivoId) 
+    {
         this.tipoVC = txtTipoVC.getText();
-        this.activoId = (String) comboActivoId.getSelectedItem();
+        this.activoId = (Integer) comboActivoId.getSelectedItem();
     }
 }

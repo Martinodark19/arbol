@@ -16,11 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -103,7 +103,7 @@ public class Interfaz extends JFrame
             
             // Cambiar el diseño del panel principal
             formPanel.setLayout(new BorderLayout());
-            formPanel.setBorder(BorderFactory.createTitledBorder("Formulario Nombre y Tipo de Nodo"));
+            //formPanel.setBorder(BorderFactory.createTitledBorder("Formulario Nombre y Tipo de Nodo"));
             formPanel.setBackground(new Color(184, 211, 173));
 
 // Crear un panel secundario para los campos generales
@@ -164,7 +164,6 @@ comboTipoNodo.addActionListener(event -> {
     {
         // Actualizar la memoria con la nueva opción
         mapaOpcionesMemoria.put(1, nuevaOpcion);
-        System.out.println(mapaOpcionesMemoria.get(1));
         // Mostrar el formulario correspondiente a la nueva opción
         mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
     }
@@ -173,16 +172,156 @@ comboTipoNodo.addActionListener(event -> {
     JButton btnGuardar = new JButton("Guardar");
     btnGuardar.addActionListener(event -> {
 
-        // Obtener los valores del formulario
+
+        // Obtener los valores del formularios
         String nombre = txtNombre.getText();
         String tipoNodo = (String) comboTipoNodo.getSelectedItem();
+
+        //ahora viene la logica de insercion a la base de datoss
+
+        switch (tipoNodo) 
+        {
+            case "Enlace":
+                System.out.println("Opción seleccionada: Enlace.");
+                // Aquí puedes agregar un formulario para "Enlace"
+                break;
+
+            case "Activos":                                                         
+                Map<Integer,String> opcionesNodoActivosMap = new HashMap<>();
+
+                opcionesNodoActivosMap.put(1, activoFormSimplificadoGetter.getTipo());
+                opcionesNodoActivosMap.put(2, activoFormSimplificadoGetter.getEstado());
+                opcionesNodoActivosMap.put(3, activoFormSimplificadoGetter.getMonitor());
+
+                //tipo,estado,monitor
+
+                Boolean insertOpcionesNodoActivos = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoActivosMap);
+                if (insertOpcionesNodoActivos) 
+                {
+                    System.out.println("se inserto correctamente en activos");
+                    reloadTreePanel();
+
+                    JOptionPane.showMessageDialog(
+                        formPanel, // Panel o componente padre
+                        "Guardado exitosamente.",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                    //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion 
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(
+                        formPanel, // Panel o componente padre
+                        "Ocurrio un error inesperado.",
+                        "Error",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                    System.out.println("No se inserto correctamente en activos");
+
+                    // debemos informar que ocurrio un problema al insertar el nodo a la base de datos
+                }
+                //forms.activoFormSimplificado(dynamicFormPanel);
+                break;
+
+            case "Variables":
+
+                    //logica para permitir abrir y cerrar el formulario
+                if(variablesContextoSimplificadoGetter.isDisponibilidadForm() == false)
+                {
+                            // Mostrar un cuadro de diálogo informativo
+                    JOptionPane.showMessageDialog(
+                        formPanel, // Panel o componente padre
+                        "No hay nodos activos disponibles. Por favor, agregue nodos activos antes de continuar.",
+                        "Información",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    break; // Detén el flujo aquí si no está disponible
+
+                }
+                else
+                {
+                    Map<Integer,String> opcionesNodoVariablesMap = new HashMap<>();
+                    opcionesNodoVariablesMap.put(1,variablesContextoSimplificadoGetter.getTipoVC());
+                    opcionesNodoVariablesMap.put(2, variablesContextoSimplificadoGetter.getActivoId().toString());
+
+                    Boolean insertOpcionesNodoVariables = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoVariablesMap);
+                    if (insertOpcionesNodoVariables) 
+                    {
+                        //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
+                        System.out.println("se inserto correctamente en variables");
+                        reloadTreePanel();
+
+                        JOptionPane.showMessageDialog(
+                            formPanel, // Panel o componente padre
+                            "Guardado exitosamente.",
+                            "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE
+                        );
+
+     
+                    }
+                    else
+                    {
+
+                        // debemos informar que ocurrio un problema al insertar el nodo a la base de datos
+                        System.out.println("Ocurrio un problema al insertar el nodo de Variables");
+                        JOptionPane.showMessageDialog(
+                            formPanel, // Panel o componente padre
+                            "Ocurrio un error inesperado.",
+                            "Error",
+                            JOptionPane.INFORMATION_MESSAGE
+                        );
     
+                    }
+    
+                    System.out.println("Opción seleccionada: Variables.");
+                    //forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
+                }
+
+                break;
+
+            case "Sentencias":
+
+                Map<Integer,String> opcionesNodoSentenciasMap = new HashMap<>();
+                opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
+                //opcionesNodoSentenciasMap.put(1, variablesContextoSimplificadoGetter.getActivoId());
+
+                Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
+                if (insertOpcionesNodoSentencias) 
+                {
+                    //debemos dar aviso de que el nodo se ingreso3 correctamente y realizar una accion
+                    System.out.println("Se inserto correctamente en Sentencias");
+                    reloadTreePanel();
+                    JOptionPane.showMessageDialog(
+                        formPanel, // Panel o componente padre
+                        "Guardado exitosamente.",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );                
+                }
+                else
+                {
+                    // debemos informar que ocurrio un problema al insertar el nodo a la base de datos
+                    System.out.println("Ocurrio un error al insertar en Sentencias");
+                    JOptionPane.showMessageDialog(
+                        formPanel, // Panel o componente padre
+                        "Ocurrio un error inesperado.",
+                        "Error",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                }
+                System.out.println("Opción seleccionada: Sentencias.");
+                //forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
+                break;
+
+            default:
+                System.out.println("Opción no reconocida: " + selectedOption);
+                break;
+        }
         // Mostrar un mensaje en consola con los datos
         System.out.println("Guardando datos...");
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Tipo de Nodo: " + tipoNodo);
-        System.out.println("esto le enviaremos a la bd");
-        System.out.println(sentenciasFormSimplificadoGetter.getEstado());
     });
 
     // Añadir componentes al formularioPanel
@@ -269,11 +408,9 @@ comboTipoNodo.addActionListener(event -> {
                 if (!mapaNodos.containsKey(Integer.parseInt(parentId))) 
                 {
                         DefaultMutableTreeNode nodoPadre = new DefaultMutableTreeNode(nombresNodosMap.get(Integer.parseInt(parentId)));
-
                         mapaNodos.put(Integer.parseInt(parentId), nodoPadre);
                         root.add(nodoPadre);
                         construirHijos(parentId, nodoPadre, mapaNodos);
-                    
                 }
             }
 
@@ -286,11 +423,12 @@ comboTipoNodo.addActionListener(event -> {
         }
 
         tree.addTreeSelectionListener(e -> {
+            // Refrescar el formPanel
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             Integer findNodoArbolIdFromName = querys.getNodoArbolIdByName(selectedNode);
-
             if (selectedNode != null && selectedNode.getUserObject() != null) 
             {
+
                 String tipoNodo = querys.findTypeOfNodo(findNodoArbolIdFromName.toString());
                 Integer nodoArbolId = Integer.parseInt(findNodoArbolIdFromName.toString());
 
@@ -299,17 +437,17 @@ comboTipoNodo.addActionListener(event -> {
                 // Limpiar el panel derecho antes de agregar un nuevo formulario
                 formPanel.removeAll();
 
-                if ("activos".equals(tipoNodo) || "Nodo de activos".equals(tipoNodo)) 
+                if ("Activos".equals(tipoNodo) || "Nodo de activos".equals(tipoNodo)) 
                 {
                     forms.activoForm(causeId,nodoArbolId);
                     formPanel.add(forms.getPanel(), BorderLayout.CENTER);
                 } 
-                else if ("sentencias".equals(tipoNodo) || "Nodo de sentencias".equals(tipoNodo)) 
+                else if ("Sentencias".equals(tipoNodo) || "Nodo de sentencias".equals(tipoNodo)) 
                 {
                     forms.SentenciasForm(causeId,nodoArbolId);
                     formPanel.add(forms.getPanel(), BorderLayout.CENTER);
                 } 
-                else if ("variables".equals(tipoNodo) || "Nodo de variables".equals(tipoNodo)) 
+                else if ("Variables".equals(tipoNodo) || "Nodo de variables".equals(tipoNodo)) 
                 {
                     forms.VariablesContextoForm(causeId,nodoArbolId);
                     formPanel.add(forms.getPanel(), BorderLayout.CENTER);
@@ -331,6 +469,23 @@ comboTipoNodo.addActionListener(event -> {
         });
     }
 
+    private void reloadTreePanel() 
+    {
+        // Limpiar la raíz del árbol
+        root.removeAllChildren();
+        
+        // Actualizar el modelo del árbol
+        createTreeModel();
+    
+        // Refrescar el árbol en el panel izquierdo
+        ((DefaultTreeModel) tree.getModel()).reload();
+    
+        // Refrescar el componente gráfico
+        tree.revalidate();
+        tree.repaint();
+    }
+    
+
     private void construirHijos(String idNodoPadre, DefaultMutableTreeNode nodoPadre, Map<Integer, DefaultMutableTreeNode> mapaNodos) {
         List<String> hijos = querys.findNodesChildren(idNodoPadre);
 
@@ -350,30 +505,25 @@ comboTipoNodo.addActionListener(event -> {
     List<String> resultados;
 
     public List<String> mostrarFormularioSeleccionado(String selectedOption, JPanel dynamicFormPanel)
-    {
+    {                                               
         // Limpiar el dynamicFormPanel únicamente
         dynamicFormPanel.removeAll();
 
         switch (selectedOption) 
         {
             case "Enlace":
-                System.out.println("Opción seleccionada: Enlace.");
                 // Aquí puedes agregar un formulario para "Enlace"
                 break;
 
             case "Activos":
-                System.out.println("Opción seleccionada: Activos.");
                 forms.activoFormSimplificado(dynamicFormPanel);
-                System.out.println(resultados);
                 break;
                     
             case "Variables":
-                System.out.println("Opción seleccionada: Variables.");
                 forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
                 break;
 
             case "Sentencias":
-                System.out.println("Opción seleccionada: Sentencias.");
                 forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
                 break;
 
@@ -388,6 +538,7 @@ comboTipoNodo.addActionListener(event -> {
 
         return resultados;
     }
+
 
 
     public static void main(String[] args) {
