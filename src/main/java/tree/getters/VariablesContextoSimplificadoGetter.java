@@ -33,7 +33,8 @@ public class VariablesContextoSimplificadoGetter
     }
 
     // Getter para disponibilidadForm
-    public boolean isDisponibilidadForm() {
+    public boolean isDisponibilidadForm() 
+    {
         return disponibilidadForm;
     }
 

@@ -121,13 +121,13 @@ public class Database
     public List<String> getDataForNodoArbol(int nodoArbolId) 
     {
         String tipoNodo = null;
-        Integer causaId = null;
+        Integer modoarbolid = null;
         List<String> arrayNodoInformation = new ArrayList<>();
     
         try 
         {
             // Query para confirmar tipo de nodo
-            String query = "SELECT tipoNodo, causaId FROM nodoArbol WHERE nodoArbolId = ?";
+            String query = "SELECT tipoNodo, modoarbolid FROM nodoArbol WHERE nodoArbolId = ?";
             
             // Queries para obtener información específica
             String activosQuery = "SELECT * FROM activos WHERE activoId = ?";
@@ -142,11 +142,11 @@ public class Database
             statement.setInt(1, nodoArbolId);
             ResultSet resultSet = statement.executeQuery();
     
-            // Obtener tipoNodo y causaId
+            // Obtener tipoNodo y modoarbolid
             if (resultSet.next()) 
             {
                 tipoNodo = resultSet.getString("tipoNodo");
-                causaId = resultSet.getInt("causaId");
+                modoarbolid = resultSet.getInt("modoarbolid");
             } 
             else 
             {
@@ -160,21 +160,21 @@ public class Database
             switch (tipoNodo) 
             {
                 case "activos":
-                case "Nodo de activos":
+                case "nodo de activos":
                     detailStatement = connection.prepareStatement(activosQuery);
-                    detailStatement.setInt(1, causaId);
+                    detailStatement.setInt(1, modoarbolid);
                     break;
     
                 case "variables":
-                case "Nodo de variables":
+                case "nodo de variables":
                     detailStatement = connection.prepareStatement(variablesQuery);
-                    detailStatement.setInt(1, causaId);
+                    detailStatement.setInt(1, modoarbolid);
                     break;
     
                 case "sentencias":
-                case "Nodo de sentencias":
+                case "nodo de sentencias":
                     detailStatement = connection.prepareStatement(sentenciasQuery);
-                    detailStatement.setInt(1, causaId);
+                    detailStatement.setInt(1, modoarbolid);
                     break;
         
     
@@ -209,7 +209,6 @@ public class Database
         {
             e.printStackTrace();
         }
-    
         return arrayNodoInformation;
     }
 
@@ -279,12 +278,10 @@ public class Database
         {
             System.out.println("El nodo seleccionado no es válido.");
         }
-
         return nodoArbolId;
 }
 
 
-    
 // metodos para acceder a los valores de los formularios
     public Map<Integer, String> getActivoDetails(int activoId) 
     {
@@ -407,7 +404,7 @@ public class Database
     }
 
 
-    public boolean updateVariableDetails(int variableId, String tipo, String activoId) 
+    public boolean updateVariableDetails(int variableId, String tipo, int activoId) 
     {
         String query = "UPDATE variablescontexto SET tipo = ?, activoId = ? WHERE VariableId = ?";
     
@@ -416,11 +413,17 @@ public class Database
             Connection connection = DriverManager.getConnection(url);
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, tipo);
-            preparedStatement.setInt(2, Integer.parseInt(activoId));
+            preparedStatement.setInt(2, activoId);
             preparedStatement.setInt(3, variableId);
 
             int rowsUpdated = preparedStatement.executeUpdate();
-            return rowsUpdated > 0;
+
+            if (rowsUpdated > 0) 
+            {
+                return true;
+            }
+
+            return false;
         } 
         catch (SQLException e) 
         {
@@ -431,6 +434,7 @@ public class Database
     
     public boolean updateSentenciaEstado(int sentenciaId, String estado) 
     {
+
         String updateQuery = "UPDATE sentencias SET estado = ? WHERE sentenciaId = ?";
         try
         {
@@ -440,7 +444,15 @@ public class Database
             preparedStatement.setInt(2, sentenciaId);
     
             int rowsUpdated = preparedStatement.executeUpdate();
-            return rowsUpdated > 0;
+
+            if(rowsUpdated > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
     
         } 
         catch (SQLException e) 
@@ -478,12 +490,12 @@ public class Database
         }
     }
 
-     
+
     public Boolean insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> mapTipoNodo)                       
     {
         try
         {
-            String query = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, causaId, nombre) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, modoarbolid, nombre) VALUES (?, ?, ?, ?)";
             Connection connection = DriverManager.getConnection(url);
             PreparedStatement preparedStatementQuery = connection.prepareStatement(query);
 
@@ -499,34 +511,34 @@ public class Database
                 nodoArbolId = maxCauseId + 1; // Incrementar el último ID
             }
 
-            // Paso 1: obtener el maximo causeId
-            String maxCauseIdQuery = "SELECT MAX(causaId) AS maxCauseId FROM nodoarbol";
+            // Paso 1: obtener el maximo modoarbolid
+            String maxCauseIdQuery = "SELECT MAX(modoarbolid) AS maxModoarbolId FROM nodoarbol";
             Statement statementCauseId = connection.createStatement();
             ResultSet resultSetCauseId = statementCauseId.executeQuery(maxCauseIdQuery);
 
-            int causaId = 1; // Valor inicial si la tabla está vacía
+            int modoarbolId = 1; // Valor inicial si la tabla está vacía
             if (resultSetCauseId.next()) 
             {
-                int maxCauseId = resultSetCauseId.getInt("maxCauseId");
-                causaId = maxCauseId + 1; // Incrementar el último ID
+                int maxModoarbolId = resultSetCauseId.getInt("maxModoarbolId");
+                modoarbolId = maxModoarbolId + 1; // Incrementar el último ID
             }
 
             int resultSetQuery;
 
             switch (tipoNodo) 
             {
-                case "Activos":
+                case "activos":
                     String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
                     PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo);
 
                     //insert para tabla nodoArbol
                     preparedStatementQuery.setInt(1, nodoArbolId);
                     preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, causaId);
+                    preparedStatementQuery.setInt(3, modoarbolId);
                     preparedStatementQuery.setString(4, nombre);
 
                     //insert para Activos                    
-                    preparedStatementQueryActivo.setInt(1, causaId);
+                    preparedStatementQueryActivo.setInt(1, modoarbolId);
                     preparedStatementQueryActivo.setString(2, mapTipoNodo.get(1));
                     preparedStatementQueryActivo.setString(3, mapTipoNodo.get(2));
                     preparedStatementQueryActivo.setString(4, mapTipoNodo.get(3));
@@ -534,29 +546,27 @@ public class Database
                     resultSetQuery = preparedStatementQuery.executeUpdate();
                     int  resultSetActivos = preparedStatementQueryActivo.executeUpdate();
 
-                    System.out.println("Preparando para insertar un nodo de tipo Activos.");
                     break;
-                case "Variables":
+                case "variables":
                     String queryVariable = "INSERT INTO  variablesContexto (VariableId,tipo, activoId) VALUES (?, ?, ?)";
                     PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable);
 
                     //insert para tabla nodoArbol
                     preparedStatementQuery.setInt(1, nodoArbolId);
                     preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, causaId);
+                    preparedStatementQuery.setInt(3, modoarbolId);
                     preparedStatementQuery.setString(4, nombre);
 
                     //insert para Variables                    
-                    preparedStatementQueryVariables.setInt(1, causaId);
+                    preparedStatementQueryVariables.setInt(1, modoarbolId);
                     preparedStatementQueryVariables.setString(2, mapTipoNodo.get(1));
                     preparedStatementQueryVariables.setInt(3, Integer.parseInt(mapTipoNodo.get(2)));
-                    System.out.println("Preparando para insertar un nodo de tipo Variables.");
 
                     resultSetQuery = preparedStatementQuery.executeUpdate();
                     int  resultSetVariables = preparedStatementQueryVariables.executeUpdate();
 
                     break;
-                case "Sentencias":
+                case "sentencias":
 
                     String querySentencias = "INSERT INTO sentencias (sentenciaId,estado) VALUES (?, ?)";
                     PreparedStatement preparedStatementQuerySentencias = connection.prepareStatement(querySentencias);
@@ -565,14 +575,13 @@ public class Database
                     //insert para tabla nodoArbol
                     preparedStatementQuery.setInt(1, nodoArbolId);
                     preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, causaId);
+                    preparedStatementQuery.setInt(3, modoarbolId);
                     preparedStatementQuery.setString(4, nombre);
 
                     // esta llegando null a sentencias
 
-                    preparedStatementQuerySentencias.setInt(1, causaId);
+                    preparedStatementQuerySentencias.setInt(1, modoarbolId);
                     preparedStatementQuerySentencias.setString(2, mapTipoNodo.get(1));
-                    System.out.println("Preparando para insertar un nodo de tipo Sentencias.");
 
                     resultSetQuery = preparedStatementQuery.executeUpdate();
                     int resultSetSentencias = preparedStatementQuerySentencias.executeUpdate();
@@ -583,6 +592,7 @@ public class Database
     
         }
       
+
         catch (SQLException e) 
         {
             System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
