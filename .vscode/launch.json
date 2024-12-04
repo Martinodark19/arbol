@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GruposUsuario",
+            "request": "launch",
+            "mainClass": "tree.GruposUsuario",
+            "projectName": "arbolProyecto"
+        },
+        {
+            "type": "java",
+            "name": "GruposLocales",
+            "request": "launch",
+            "mainClass": "tree.GruposLocales",
+            "projectName": "arbolProyecto"
+        },
+        {
+            "type": "java",
+            "name": "Access",
+            "request": "launch",
+            "mainClass": "tree.Access",
+            "projectName": "arbolProyecto"
+        },
+        {
+            "type": "java",
             "name": "Interfaz",
             "request": "launch",
             "mainClass": "tree.Interfaz",

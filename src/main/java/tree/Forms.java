@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,6 +189,17 @@ public class Forms
 
         JButton btnGuardar = new JButton("Guardar");
 
+        //logica para mostrar el boton guardar dependiendo de los permisos del usuario
+        if (configurationGetter.getPermisosUsuario()) 
+        {
+            btnGuardar.setVisible(true);
+        }
+        else
+        {
+            btnGuardar.setVisible(false);
+    
+        }
+
         // Añadir componentes al formularioPanel
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -334,6 +346,17 @@ public class Forms
         
 
         JButton btnGuardar = new JButton("Guardar");
+
+        //logica para mostrar el boton guardar dependiendo de los permisos del usuario
+        if (configurationGetter.getPermisosUsuario()) 
+        {
+            btnGuardar.setVisible(true);
+        }
+        else
+        {
+            btnGuardar.setVisible(false);
+    
+        }
     
         // Añadir componentes al formularioPanel
         gbc.gridx = 0;
@@ -420,6 +443,17 @@ public class Forms
 
     JButton btnGuardar = new JButton("Guardar");
 
+    //logica para mostrar el boton guardar dependiendo de los permisos del usuario
+    if (configurationGetter.getPermisosUsuario()) 
+    {
+        btnGuardar.setVisible(true);
+    }
+    else
+    {
+        btnGuardar.setVisible(false);
+
+    }
+
     // Añadir componentes al formularioPanel
     gbc.gridx = 0;
     gbc.gridy = 0;
@@ -462,7 +496,6 @@ public class Forms
         } 
         else 
         {
-
             JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
         }        
 
@@ -782,6 +815,210 @@ public void configuracionNodoRaiz(JPanel panel)
     gbc.gridx = 0;
     gbc.gridy = 1;
     gbc.gridwidth = 2;
+    gbc.anchor = GridBagConstraints.CENTER;
+    formularioPanel.add(btnGuardar, gbc);
+
+    // Añadir el formulario al panel principal
+    panel.add(formularioPanel, BorderLayout.CENTER);
+
+    // Refrescar el panel
+    panel.revalidate();
+    panel.repaint();
+}
+
+
+private String nodoPadreEliminar;
+private List<String> nodosHijosDisponibles = new ArrayList<>();
+private JComboBox<String> hijos = new JComboBox<>();
+
+//nodoArbolId a eliminar
+private Integer nodoArbolIdPadre;
+private Integer nodoArbolIdHijo;
+JButton btnGuardar = new JButton("Guardar");
+
+
+public void crearRelacionesNodoForm(JPanel panel) 
+{
+    // Reiniciar el panel
+    resetPanel();
+
+    // Configurar el diseño del panel
+    panel.setLayout(new BorderLayout());
+    //panel.setBorder(BorderFactory.createTitledBorder("Configuración Nodo Raíz"));
+    panel.setBackground(new Color(184, 211, 173));
+
+    // Crear el panel del formulario
+    JPanel formularioPanel = new JPanel(new GridBagLayout());
+    formularioPanel.setBackground(new Color(184, 211, 173));
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    JLabel nodosPadre = new JLabel("Seleccione el nodo padre:");
+    JComboBox<String> nodos = new JComboBox<>();
+
+    Map<Integer, String> obtenerNodos = querys.obtenerNombresNodos();
+    nodos.addItem("Seleccione una opción..."); // Ítem vacío
+
+    //Si no se ha seleccionado una opcion disponible deshabilitamos el JComboBox hijos y el boton guardar
+        hijos.setEnabled(false);
+        btnGuardar.setEnabled(false);
+
+
+    if (!obtenerNodos.isEmpty()) 
+    {
+        for (String nombre : obtenerNodos.values()) 
+        {
+            nodos.addItem(nombre);
+        }
+        //opcion por defecto
+        nodos.setSelectedIndex(0);
+
+        nodoPadreEliminar = (String) nodos.getSelectedItem();
+
+    // Registrar ActionListeners para detectar cambios en los JComboBox
+    nodos.addActionListener(e -> {
+        if (!nodoPadreEliminar.equals(nodos.getSelectedItem())) 
+        {
+            if (nodos.getSelectedItem().equals("Seleccione una opción...")) {
+                hijos.setEnabled(false);
+                btnGuardar.setEnabled(false);
+            }
+            else
+            {
+                btnGuardar.setEnabled(true);
+                hijos.setEnabled(true);
+            }
+                nodoPadreEliminar = (String) nodos.getSelectedItem();
+
+                hijos.removeAllItems();
+                nodosHijosDisponibles.clear();
+    
+                for (String nombreHijos : obtenerNodos.values()) 
+                {
+                    nodosHijosDisponibles.add(nombreHijos);
+                }
+        
+                //eliminar el nodo padre para que no este disponible para ser nodo hijo
+        
+                nodosHijosDisponibles.remove(nodoPadreEliminar);
+        
+                 
+                
+                for (int i = 0; i < nodosHijosDisponibles.size(); i++) 
+                {
+                    hijos.addItem(nodosHijosDisponibles.get(i));
+                }
+                
+            
+        }
+    
+            });
+        
+    }
+    
+    else
+    {
+        JOptionPane.showMessageDialog(
+            panel,
+            "No existen nodos disponibles en este momento. Por favor inserte nuevos nodos para poder crear las relaciones",
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+
+    //logica para mostrar los nodos hijos disponibles
+    JLabel nodoHijo = new JLabel("Seleccione el nodo hijo:");
+    //JComboBox<String> hijos = new JComboBox<>();
+
+    String selectedTipo = (String) hijos.getSelectedItem();
+
+
+        for (int i = 0; i < nodosHijosDisponibles.size(); i++) 
+        {
+            hijos.addItem(nodosHijosDisponibles.get(i));
+        }
+
+    JLabel opcionTF = new JLabel("Seleccione opcionTF:");
+    JComboBox<String> opcionTFJComboBox = new JComboBox<>(new String[]{"T","F"});
+    opcionTFJComboBox.setSelectedItem(null); // No selecciona ningún elemento por defecto
+
+                                                    
+    // Crear el botón Guardar
+    //btnGuardar = new JButton("Guardar");
+    btnGuardar.addActionListener(e -> {
+        
+       // System.out.println("NODO PADRE " + nodos.getSelectedItem());
+       // System.out.println("NODO HIJO " + hijos.getSelectedItem());
+
+        // esta logica sera la responsable de obtener el nodoArbolId del map obtenerNodos
+        for (Map.Entry<Integer, String> idNodoArbol : obtenerNodos.entrySet()) 
+        {
+            if (idNodoArbol.getValue().equals(nodos.getSelectedItem())) 
+            {
+                System.out.println("Llave encontrada Padre : " + idNodoArbol.getKey());
+                nodoArbolIdPadre = idNodoArbol.getKey();
+            }
+
+            if (idNodoArbol.getValue().equals(hijos.getSelectedItem())) 
+            {
+                System.out.println("Llave encontrada Hijo : " + idNodoArbol.getKey());
+                nodoArbolIdHijo = idNodoArbol.getKey();
+
+            }
+        }
+
+        //enviar a la base de datos
+        Boolean enviarRelacionNodoArbol = querys.InsertRelacionesNodos(nodoArbolIdPadre, nodoArbolIdHijo, (String) opcionTFJComboBox.getSelectedItem());
+        
+        if (enviarRelacionNodoArbol) 
+        {
+            JOptionPane.showMessageDialog(
+                panel,
+                "Nodo Relacionado Con Éxito.",
+                "Éxito",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // Reiniciar el panel
+            interfazPrincipal.reloadTreePanel();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(
+                panel,
+                "No se puede asignar un nuevo padre al nodo seleccionado porque este ya pertenece a una jerarquía existente",
+                "Error", // Título de la ventana
+                JOptionPane.ERROR_MESSAGE  // Tipo de mensaje
+            );
+        }
+        
+    });
+    // Añadir componentes al formulario
+
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    formularioPanel.add(nodosPadre, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(nodos, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    formularioPanel.add(nodoHijo, gbc);
+    gbc.gridx = 1;
+    formularioPanel.add(hijos, gbc);
+
+    // Fila 2: opcionTF y opcionTFJComboBox
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    formularioPanel.add(opcionTF, gbc);
+
+    gbc.gridx = 1; // Cambiar a 1 para mantener la consistencia
+    formularioPanel.add(opcionTFJComboBox, gbc);
+
+    gbc.gridx = 0;
+    gbc.gridy = 3;
+    gbc.gridwidth = 3;
     gbc.anchor = GridBagConstraints.CENTER;
     formularioPanel.add(btnGuardar, gbc);
 

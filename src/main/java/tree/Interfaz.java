@@ -1,7 +1,11 @@
 package tree;
 
+//permisos windows
+
+
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,11 +15,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -49,13 +56,11 @@ public class Interfaz extends JFrame
 
     private String nodoNombreRaiz = "Raíz";
 
-
     //lista para almacenar datos de formularios de creacion de nodos
     private List<String> listaDatosTipoNodo = new ArrayList<>();
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
     private DefaultTreeModel treeModel;
-
 
     // Clase que contiene los formularios respecto al tipo de nodo
     private Forms forms;
@@ -64,7 +69,6 @@ public class Interfaz extends JFrame
     private SentenciasFormSimplificadoGetter sentenciasFormSimplificadoGetter;
     private ConfigurationGetter configurationGetter;
 
-
     public Interfaz() 
 {
     // Inicializar ActivoFormSimplificadoGetter antes de pasarlo a Forms
@@ -72,6 +76,8 @@ public class Interfaz extends JFrame
     this.variablesContextoSimplificadoGetter = new VariablesContextoSimplificadoGetter();
     this.sentenciasFormSimplificadoGetter = new SentenciasFormSimplificadoGetter();
     this.configurationGetter = new ConfigurationGetter();
+    verifyPermissionsUser();
+
     // Inicializar base de datos y formularios
     this.querys = new Database();
     this.forms = new Forms(this,activoFormSimplificadoGetter,variablesContextoSimplificadoGetter,sentenciasFormSimplificadoGetter,configurationGetter);
@@ -109,19 +115,52 @@ public class Interfaz extends JFrame
     JPanel botonesPanel = new JPanel();
     botonesPanel.setLayout(new GridBagLayout()); // Diseño flexible para organizar botones
     botonesPanel.setBackground(new Color(184, 211, 173)); // Fondo consistente
+    botonesPanel.setPreferredSize(new Dimension(200, 115)); // 200 px de ancho, altura automática
+
 
     // Configurar GridBagConstraints para el diseño
     GridBagConstraints gbcBotones = new GridBagConstraints();
     gbcBotones.insets = new Insets(5, 5, 5, 5); // Margen entre botones
     gbcBotones.fill = GridBagConstraints.HORIZONTAL; // Ocupa todo el ancho disponible
+
+    JButton btnCrearRelacionNodos = new JButton("Crear relacion nodos");
+    btnCrearRelacionNodos.setFont(new Font("Arial", Font.BOLD, 16));
+    btnCrearRelacionNodos.setBackground(new Color(135, 206, 250)); // Color azul claro
+
+    btnCrearRelacionNodos.setVisible(false);
+
+
+        // logica para mostrar boton para administrador
+        if(configurationGetter.getPermisosUsuario())
+        {
+            btnCrearRelacionNodos.setVisible(true);
+    
+        }
+
+
+    gbcBotones.gridx = 0; // Primera columna
+    gbcBotones.gridy = 0; // Primera fila
+    botonesPanel.add(btnCrearRelacionNodos, gbcBotones);
+
+    btnCrearRelacionNodos.addActionListener(new ActionListener() 
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            selectedOption = "Crear relaciones nodos";
+            
+            // Llamar al método loloForms
+            mostrarFormularioSeleccionado(selectedOption, formPanel);
+        }
+    });
     
     JButton btnCambiarNombreRaiz = new JButton("Cambiar nombre nodo raiz");
     btnCambiarNombreRaiz.setFont(new Font("Arial", Font.BOLD, 16));
     btnCambiarNombreRaiz.setBackground(new Color(135, 206, 250)); // Color azul claro
 
     // Añadir el botón "Cambiar nombre nodo raíz" al panel
-    gbcBotones.gridx = 0; // Primera columna
-    gbcBotones.gridy = 0; // Primera fila
+    gbcBotones.gridy = 2; // Segunda fila
+
     botonesPanel.add(btnCambiarNombreRaiz, gbcBotones);
 
     btnCambiarNombreRaiz.addActionListener(new ActionListener() 
@@ -137,12 +176,21 @@ public class Interfaz extends JFrame
         }
     });
 
-
     // Crear el botón "Añadir Nodo"
     JButton btnNuevoNodo = new JButton("Añadir Nodo");
+    btnNuevoNodo.setVisible(false);
+
+    // logica para mostrar boton para administrador
+    if(configurationGetter.getPermisosUsuario())
+    {
+        btnNuevoNodo.setVisible(true);
+
+    }
+
     btnNuevoNodo.setFont(new Font("Arial", Font.BOLD, 16));
     btnNuevoNodo.setBackground(new Color(135, 206, 250)); // Color azul claro
-    btnNuevoNodo.addActionListener(new ActionListener() {
+    btnNuevoNodo.addActionListener(new ActionListener() 
+    {
         @Override
         public void actionPerformed(ActionEvent e) 
         {
@@ -153,160 +201,104 @@ public class Interfaz extends JFrame
             //formPanel.setBorder(BorderFactory.createTitledBorder("Formulario Nombre y Tipo de Nodo"));
             formPanel.setBackground(new Color(184, 211, 173));
 
-// Crear un panel secundario para los campos generales
-JPanel formularioPanel = new JPanel(new GridBagLayout());
-formularioPanel.setBackground(new Color(184, 211, 173));
-GridBagConstraints gbc = new GridBagConstraints();
-gbc.insets = new Insets(10, 10, 10, 10);
-gbc.fill = GridBagConstraints.HORIZONTAL;
+            // Crear un panel secundario para los campos generales
+            JPanel formularioPanel = new JPanel(new GridBagLayout());
+            formularioPanel.setBackground(new Color(184, 211, 173));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
 
-// Crear un panel secundario para añadir nodo raiz
-JPanel formularioPanel1 = new JPanel(new GridBagLayout());
-formularioPanel1.setBackground(new Color(184, 211, 173));
-GridBagConstraints gbc1 = new GridBagConstraints();
-gbc1.insets = new Insets(10, 10, 10, 10);
-gbc1.fill = GridBagConstraints.HORIZONTAL;
+            // Crear un panel secundario para añadir nodo raiz
+            JPanel formularioPanel1 = new JPanel(new GridBagLayout());
+            formularioPanel1.setBackground(new Color(184, 211, 173));
+            GridBagConstraints gbc1 = new GridBagConstraints();
+            gbc1.insets = new Insets(10, 10, 10, 10);
+            gbc1.fill = GridBagConstraints.HORIZONTAL;
 
+            // Panel dinámico para los formularios específicos
+            JPanel dynamicFormPanel = new JPanel(new GridBagLayout());
+            dynamicFormPanel.setBackground(new Color(184, 211, 173));
 
-// Panel dinámico para los formularios específicos
-JPanel dynamicFormPanel = new JPanel(new GridBagLayout());
-dynamicFormPanel.setBackground(new Color(184, 211, 173));
+            // Configurar los campos del formulario principal
+            JLabel lblNombre = new JLabel("Nombre:");
+            JTextField txtNombre = new JTextField(20);
 
-
-// Configurar los campos del formulario principal
-JLabel lblNombre = new JLabel("Nombre:");
-JTextField txtNombre = new JTextField(20);
-
-txtNombre.addKeyListener(new KeyAdapter() 
-{
-    @Override
-    public void keyTyped(KeyEvent e) {
-        if (txtNombre.getText().length() >= 50) { // Máximo 10 caracteres
-            e.consume();
-            Toolkit.getDefaultToolkit().beep();
-        }
-
-    }
-    
-});
-
-    JLabel lblTipoNodo = new JLabel("Tipo de Nodo:");
-    JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
-
-    // Crear el mapa en memoria para almacenar la última opción seleccionada
-    Map<Integer, String> mapaOpcionesMemoria = new HashMap<>();
-    Map<Integer, String> mapaOpcionesTipoNodo = new HashMap<>();
-
-    // Obtener la opción por defecto
-    selectedOption = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
-
-    // Almacenar la opción por defecto en el mapa
-    mapaOpcionesMemoria.put(1, selectedOption);
-
-    // Lógica para mostrar el formulario inicial basado en la opción preseleccionada
-    List<String> resultadosTipoNodo = mostrarFormularioSeleccionado(selectedOption, dynamicFormPanel);
-    
-//en el map debemos insertar con el siguiente orden 1=tipo,2=estado,3=monitor
-
-// Añadir un ActionListener al JComboBox para manejar la selección
-comboTipoNodo.addActionListener(event -> {
-
-    // Obtener la nueva opción seleccionada
-    String nuevaOpcion = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
-    String opcionAnterior = mapaOpcionesMemoria.get(1).toLowerCase();    
-
-    // Verificar si la opción ha cambiado
-    if (!nuevaOpcion.equals(opcionAnterior)) 
-    {
-        // Actualizar la memoria con la nueva opción
-        mapaOpcionesMemoria.put(1, nuevaOpcion);
-        // Mostrar el formulario correspondiente a la nueva opción
-        mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
-    }
-    });
-
-    JButton btnGuardar = new JButton("Guardar");
-    btnGuardar.addActionListener(event -> {
-
-        // Obtener los valores del formularios
-        String nombre = txtNombre.getText();
-        String tipoNodo = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
-
-        //ahora viene la logica de insercion a la base de datoss
-
-        switch (tipoNodo) 
-        {
-            case "enlace":
-                System.out.println("Opción seleccionada: Enlace.");
-                // Aquí puedes agregar un formulario para "Enlace"
-                break;
-
-            case "activos":                                                         
-                Map<Integer,String> opcionesNodoActivosMap = new HashMap<>();
-
-                opcionesNodoActivosMap.put(1, activoFormSimplificadoGetter.getTipo());
-                opcionesNodoActivosMap.put(2, activoFormSimplificadoGetter.getEstado());
-                opcionesNodoActivosMap.put(3, activoFormSimplificadoGetter.getMonitor());
-
-                //tipo,estado,monitor
-
-                Boolean insertOpcionesNodoActivos = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoActivosMap);
-                if (insertOpcionesNodoActivos) 
-                {
-                    reloadTreePanel();
-
-                    JOptionPane.showMessageDialog(
-                        formPanel, // Panel o componente padre
-                        "Guardado exitosamente.",
-                        "Éxito",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
-                    //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
-                        // Remover el formulario del formPanel
-                    formPanel.removeAll();
-                    formPanel.revalidate();
-                    formPanel.repaint();
+            txtNombre.addKeyListener(new KeyAdapter() 
+            {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    if (txtNombre.getText().length() >= 50) { // Máximo 10 caracteres
+                        e.consume();
+                        Toolkit.getDefaultToolkit().beep();
+                    }
 
                 }
-                else
-                {
-                    JOptionPane.showMessageDialog(
-                        formPanel, // Panel o componente padre
-                        "Ocurrio un error inesperado.",
-                        "Error",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
+                
+            });
 
+            JLabel lblTipoNodo = new JLabel("Tipo de Nodo:");
+            JComboBox<String> comboTipoNodo = new JComboBox<>(new String[]{"Activos", "Variables", "Sentencias"});
+
+            // Crear el mapa en memoria para almacenar la última opción seleccionada
+            Map<Integer, String> mapaOpcionesMemoria = new HashMap<>();
+            Map<Integer, String> mapaOpcionesTipoNodo = new HashMap<>();
+
+            // Obtener la opción por defecto
+            selectedOption = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
+
+            // Almacenar la opción por defecto en el mapa
+            mapaOpcionesMemoria.put(1, selectedOption);
+
+            // Lógica para mostrar el formulario inicial basado en la opción preseleccionada
+            List<String> resultadosTipoNodo = mostrarFormularioSeleccionado(selectedOption, dynamicFormPanel);
+      
+            
+            // Añadir un ActionListener al JComboBox para manejar la selección
+            comboTipoNodo.addActionListener(event -> {
+
+                // Obtener la nueva opción seleccionada
+                String nuevaOpcion = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
+                String opcionAnterior = mapaOpcionesMemoria.get(1).toLowerCase();    
+
+                // Verificar si la opción ha cambiado
+                if (!nuevaOpcion.equals(opcionAnterior)) 
+                {
+                    // Actualizar la memoria con la nueva opción
+                    mapaOpcionesMemoria.put(1, nuevaOpcion);
+                    // Mostrar el formulario correspondiente a la nueva opción
+                    mostrarFormularioSeleccionado(nuevaOpcion, dynamicFormPanel);
                 }
-                //forms.activoFormSimplificado(dynamicFormPanel);
-                break;
+                });
 
-            case "variables":
+            JButton btnGuardar = new JButton("Guardar");
+            btnGuardar.addActionListener(event -> {
 
-                    //logica para permitir abrir y cerrar el formulario
-                if(variablesContextoSimplificadoGetter.isDisponibilidadForm() == false)
-                {
-                            // Mostrar un cuadro de diálogo informativo
-                    JOptionPane.showMessageDialog(
-                        formPanel, // Panel o componente padre
-                        "No hay nodos activos disponibles. Por favor, agregue nodos activos antes de continuar.",
-                        "Información",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
+            // Obtener los valores del formularios
+            String nombre = txtNombre.getText();
+            String tipoNodo = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
 
-                    break; // Detén el flujo aquí si no está disponible
-                }
-                else
-                {
-                    Map<Integer,String> opcionesNodoVariablesMap = new HashMap<>();
-                    opcionesNodoVariablesMap.put(1,variablesContextoSimplificadoGetter.getTipoVC());
-                    opcionesNodoVariablesMap.put(2, variablesContextoSimplificadoGetter.getActivoId().toString());
+            //ahora viene la logica de insercion a la base de datoss
 
-                    Boolean insertOpcionesNodoVariables = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoVariablesMap);
-                    if (insertOpcionesNodoVariables) 
+            switch (tipoNodo) 
+            {
+                case "enlace":
+                    System.out.println("Opción seleccionada: Enlace.");
+                    // Aquí puedes agregar un formulario para "Enlace"
+                    break;
+
+                case "activos":                                                         
+                    Map<Integer,String> opcionesNodoActivosMap = new HashMap<>();
+
+                    opcionesNodoActivosMap.put(1, activoFormSimplificadoGetter.getTipo());
+                    opcionesNodoActivosMap.put(2, activoFormSimplificadoGetter.getEstado());
+                    opcionesNodoActivosMap.put(3, activoFormSimplificadoGetter.getMonitor());
+
+                    //tipo,estado,monitor
+
+                    Boolean insertOpcionesNodoActivos = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoActivosMap);
+                    if (insertOpcionesNodoActivos) 
                     {
-                        //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
                         reloadTreePanel();
 
                         JOptionPane.showMessageDialog(
@@ -315,144 +307,197 @@ comboTipoNodo.addActionListener(event -> {
                             "Éxito",
                             JOptionPane.INFORMATION_MESSAGE
                         );
+                        //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
+                            // Remover el formulario del formPanel
+                        formPanel.removeAll();
+                        formPanel.revalidate();
+                        formPanel.repaint();
 
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(
+                            formPanel,
+                            "Se produjo un error al intentar guardar un nodo de tipo 'Activos'.\n" +
+                            "Por favor, revise los datos ingresados, la estructura de la tabla en la base de datos y cualquier restricción o relación existente.",
+                            "Error al Guardar",
+                            JOptionPane.ERROR_MESSAGE
+                        );
+
+                    }
+                    //forms.activoFormSimplificado(dynamicFormPanel);
+                    break;
+
+                case "variables":
+
+                        //logica para permitir abrir y cerrar el formulario
+                    if(variablesContextoSimplificadoGetter.isDisponibilidadForm() == false)
+                    {
+                        JOptionPane.showMessageDialog(
+                            formPanel,
+                            "No hay nodos activos disponibles para asociar. Por favor, agregue nodos activos antes de continuar.\n" +
+                            "Asegúrese también de que la estructura de la tabla permita este tipo de asociación.",
+                            "Información Importante",
+                            JOptionPane.INFORMATION_MESSAGE
+                        );
+
+                        break; // Detén el flujo aquí si no está disponible
+                    }
+                    else
+                    {
+                        Map<Integer,String> opcionesNodoVariablesMap = new HashMap<>();
+                        opcionesNodoVariablesMap.put(1,variablesContextoSimplificadoGetter.getTipoVC());
+                        opcionesNodoVariablesMap.put(2, variablesContextoSimplificadoGetter.getActivoId().toString());
+
+                        Boolean insertOpcionesNodoVariables = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoVariablesMap);
+                        if (insertOpcionesNodoVariables) 
+                        {
+                            //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
+                            reloadTreePanel();
+
+                            JOptionPane.showMessageDialog(
+                                formPanel, // Panel o componente padre
+                                "Guardado exitosamente.",
+                                "Éxito",
+                                JOptionPane.INFORMATION_MESSAGE
+                            );
+
+                            formPanel.removeAll();
+                            formPanel.revalidate();
+                            formPanel.repaint();
+                        }
+                        else
+                        {
+
+                            JOptionPane.showMessageDialog(
+                                formPanel,
+                                "Se produjo un error al intentar guardar un nodo de tipo 'Variables'.\n" +
+                                "Por favor, revise los datos ingresados, las relaciones con nodos activos y cualquier restricción en la estructura de la tabla.",
+                                "Error al Guardar",
+                                JOptionPane.ERROR_MESSAGE
+                            );
+        
+                        }    
+                        System.out.println("Opción seleccionada: Variables.");
+                        //forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
+                    }
+
+                    break;
+
+                case "sentencias":
+                    Map<Integer,String> opcionesNodoSentenciasMap = new HashMap<>();
+                    opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
+                    //opcionesNodoSentenciasMap.put(1, variablesContextoSimplificadoGetter.getActivoId());
+
+                    Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
+                    if (insertOpcionesNodoSentencias) 
+                    {
+                        //debemos dar aviso de que el nodo se ingreso3 correctamente y realizar una accion
+                        reloadTreePanel();
+                        JOptionPane.showMessageDialog(
+                            formPanel, // Panel o componente padre
+                            "Guardado exitosamente.",
+                            "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE
+                        ); 
+                        
                         formPanel.removeAll();
                         formPanel.revalidate();
                         formPanel.repaint();
                     }
                     else
                     {
-
                         // debemos informar que ocurrio un problema al insertar el nodo a la base de datos
-                        System.out.println("Ocurrio un problema al insertar el nodo de Variables");
                         JOptionPane.showMessageDialog(
-                            formPanel, // Panel o componente padre
-                            "Ocurrio un error inesperado.",
-                            "Error",
-                            JOptionPane.INFORMATION_MESSAGE
+                            formPanel,
+                            "Se produjo un error al intentar guardar un nodo de tipo 'Sentencias'.\n" +
+                            "Por favor, revise los datos ingresados, las restricciones de integridad referencial y la estructura de las tablas asociadas.",
+                            "Error al Guardar",
+                            JOptionPane.ERROR_MESSAGE
                         );
-    
-                    }    
-                    System.out.println("Opción seleccionada: Variables.");
-                    //forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
-                }
+                    }
+                case "S":
 
-                break;
+                    //forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
+                    break;
 
-            case "sentencias":
+                default:
+                    System.out.println("Opción no reconocida: " + selectedOption);
+                    break;
+            }
+            // Mostrar un mensaje en consola con los datos
+            System.out.println("Guardando datos...");
+        });
 
-                Map<Integer,String> opcionesNodoSentenciasMap = new HashMap<>();
-                opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
-                //opcionesNodoSentenciasMap.put(1, variablesContextoSimplificadoGetter.getActivoId());
+            // Añadir componentes al formularioPanel
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            formularioPanel.add(lblNombre, gbc);
 
-                Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
-                if (insertOpcionesNodoSentencias) 
-                {
-                    //debemos dar aviso de que el nodo se ingreso3 correctamente y realizar una accion
-                    reloadTreePanel();
-                    JOptionPane.showMessageDialog(
-                        formPanel, // Panel o componente padre
-                        "Guardado exitosamente.",
-                        "Éxito",
-                        JOptionPane.INFORMATION_MESSAGE
-                    ); 
-                    
-                    formPanel.removeAll();
-                    formPanel.revalidate();
-                    formPanel.repaint();
-                }
-                else
-                {
-                    // debemos informar que ocurrio un problema al insertar el nodo a la base de datos
-                    System.out.println("Ocurrio un error al insertar en Sentencias");
-                    JOptionPane.showMessageDialog(
-                        formPanel, // Panel o componente padre
-                        "Ocurrio un error inesperado.",
-                        "Error",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
-                }
-                System.out.println("Opción seleccionada: Sentencias.");
-                //forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
-                break;
+            gbc.gridx = 1;
+            formularioPanel.add(txtNombre, gbc);
 
-            default:
-                System.out.println("Opción no reconocida: " + selectedOption);
-                break;
-        }
-        // Mostrar un mensaje en consola con los datos
-        System.out.println("Guardando datos...");
-    });
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            formularioPanel.add(lblTipoNodo, gbc);
 
-    // Añadir componentes al formularioPanel
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    formularioPanel.add(lblNombre, gbc);
+            gbc.gridx = 1;
+            formularioPanel.add(comboTipoNodo, gbc);
 
-    gbc.gridx = 1;
-    formularioPanel.add(txtNombre, gbc);
+            // Añadir el dynamicFormPanel al formulario principal
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.gridwidth = 2; // Hacer que el dynamicFormPanel ocupe todo el ancho
+            formularioPanel.add(dynamicFormPanel, gbc);
 
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    formularioPanel.add(lblTipoNodo, gbc);
+            // Añadir el botón Guardar al final
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 2; // Hacer que el botón esté centrado
+            gbc.anchor = GridBagConstraints.CENTER;
+            formularioPanel.add(btnGuardar, gbc);
 
-    gbc.gridx = 1;
-    formularioPanel.add(comboTipoNodo, gbc);
+            // Agregar el formulario principal al centro del formPanel
+            formPanel.add(formularioPanel, BorderLayout.CENTER);
 
-    // Añadir el dynamicFormPanel al formulario principal
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    gbc.gridwidth = 2; // Hacer que el dynamicFormPanel ocupe todo el ancho
-    formularioPanel.add(dynamicFormPanel, gbc);
+            // Refrescar el formPanel
+            formPanel.revalidate();
+            formPanel.repaint();
 
-    // Añadir el botón Guardar al final
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    gbc.gridwidth = 2; // Hacer que el botón esté centrado
-    gbc.anchor = GridBagConstraints.CENTER;
-    formularioPanel.add(btnGuardar, gbc);
-
-    // Agregar el formulario principal al centro del formPanel
-    formPanel.add(formularioPanel, BorderLayout.CENTER);
-
-    // Refrescar el formPanel
-    formPanel.revalidate();
-    formPanel.repaint();
-
-        }
-    }); 
-
-    gbcBotones.gridy = 1; // Segunda fila
-    botonesPanel.add(btnNuevoNodo, gbcBotones);
-
-    // Añadir el panel de botones al panel del árbol
-    treePanel.add(botonesPanel, BorderLayout.SOUTH);
-    
-
-    // Configurar el panel derecho para formularios
-    formPanel = new JPanel();
-    formPanel.setLayout(new BorderLayout()); // Usar BorderLayout para ajustar componentes
-    formPanel.setBackground(new Color(184, 211, 173));
-
-    // Dividir la pantalla
-    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel, formPanel);
-    splitPane.setDividerLocation(300); // Tamaño inicial del panel izquierdo
-    splitPane.setResizeWeight(0.3); // Prioridad al redimensionar
-    add(splitPane);
-
-    // Probar la conexión a la base de datos
-    try 
-    {
-        querys.testDatabaseConnection();
-    } 
-    catch (Exception e) 
-    {
-        e.printStackTrace();
     }
+            }); 
 
-    // Cargar datos del árbol
-    createTreeModel();
-    setLocationRelativeTo(null);
+            gbcBotones.gridy = 1; // Segunda fila
+            botonesPanel.add(btnNuevoNodo, gbcBotones);
+
+            // Añadir el panel de botones al panel del árbol
+            treePanel.add(botonesPanel, BorderLayout.SOUTH);
+            
+
+            // Configurar el panel derecho para formularios
+            formPanel = new JPanel();
+            formPanel.setLayout(new BorderLayout()); // Usar BorderLayout para ajustar componentes
+            formPanel.setBackground(new Color(184, 211, 173));
+
+            // Dividir la pantalla
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel, formPanel);
+            splitPane.setDividerLocation(300); // Tamaño inicial del panel izquierdo
+            splitPane.setResizeWeight(0.3); // Prioridad al redimensionar
+            add(splitPane);
+
+            // Probar la conexión a la base de datos
+            try 
+            {
+                querys.testDatabaseConnection();
+            } 
+            catch (Exception e) 
+            {
+                e.printStackTrace();
+            }
+
+            // Cargar datos del árbol
+            createTreeModel();
+            setLocationRelativeTo(null);
 }
 
 public void actualizarNombreNodoRaiz() 
@@ -604,12 +649,21 @@ public void actualizarNombreNodoRaiz()
                 } 
                 else 
                 {
-                    System.out.println("Tipo de nodo no coincide con ningún formulario.");
+                    JOptionPane.showMessageDialog(
+                        formPanel,
+                        "Ha ocurrido un error al reconocer el tipo de nodo. Por favor verifique el tipo de nodo al crearlo",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
                 }
 
                 // Refrescar el panel derecho
                 formPanel.revalidate();
                 formPanel.repaint();
+            }
+            else
+            {
+
             }
         });
     }
@@ -677,6 +731,10 @@ public void actualizarNombreNodoRaiz()
                 forms.configuracionNodoRaiz(dynamicFormPanel);
                 break;
 
+            case "Crear relaciones nodos":
+                forms.crearRelacionesNodoForm(dynamicFormPanel);
+            break;
+
             default:
                 System.out.println("Opción no reconocida: " + selectedOption);
                 break;
@@ -689,6 +747,82 @@ public void actualizarNombreNodoRaiz()
         return resultados;
     }
 
+    //Este sera el metodo encargado de verificar los permisos de usuario
+    public void verifyPermissionsUser() 
+    {
+        try 
+        {
+            // Obtener el nombre del usuario actual de Windows
+            String usuario = System.getProperty("user.name");
+
+            // Construir el comando para obtener la información del usuario
+            String comando = "net user " + usuario;
+
+            // Ejecutar el comando
+            ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", comando);
+            builder.redirectErrorStream(true);
+            Process process = builder.start();
+
+            // Leer la salida del comando
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String linea;
+            boolean esAdmin = false;
+
+            while ((linea = reader.readLine()) != null) 
+            {
+                // Normalizar la línea para evitar problemas de mayúsculas/minúsculas y recortar espacios
+                String lineaNormalizada = linea.trim().toLowerCase();
+            
+                // Verificar si la línea contiene los nombres de los grupos que nos interesan
+                if (lineaNormalizada.contains("xqos_admin")) 
+                {
+                    configurationGetter.setPermisosUsuario(true);
+                    System.out.println("Estás en el grupo XQOS_Admin.");
+                    esAdmin = true;
+                    break; // Salir del bucle
+                } 
+                else if (lineaNormalizada.contains("xqos_readonly")) 
+                {
+                    configurationGetter.setPermisosUsuario(false);
+                    System.out.println("Estás en el grupo XQOS_Readonly.");
+                    esAdmin = true;
+                    break; // Salir del bucle
+                }
+            }
+            
+            // Si después del bucle no se ha establecido `esAdmin` en true, significa que no pertenece a ningún grupo válido
+            if (!esAdmin) 
+            {
+                System.out.println("El usuario no pertenece a un grupo válido.");
+                JOptionPane.showMessageDialog(
+                    null,
+                    "⚠ Acceso Restringido\n\n" +
+                    "Estimado usuario, no tiene los permisos necesarios para utilizar esta aplicación, verifique el grupo al que pertenece.\n\n" +
+                    "Si considera que esto es un error, contacte a su administrador del sistema.",
+                    "Acceso Denegado",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                System.exit(0); // Cierra la aplicación
+            }
+            
+
+            reader.close();
+
+        } 
+        catch (Exception e) 
+        {
+            JOptionPane.showMessageDialog(
+                formPanel, // Panel o componente padre
+                "Ha ocurrido un error al intentar procesar los permisos de usuario. Por favor reintente más tarde.", // Mensaje
+                "Error", // Título
+                JOptionPane.ERROR_MESSAGE // Tipo de mensaje
+            );
+            System.out.println("Ha ocurrido un error al intentar procesar los permisos de usuario. Por favor reintente mas tarde " + e);
+
+
+        }
+    }
+
 
 
     
@@ -697,10 +831,13 @@ public void actualizarNombreNodoRaiz()
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         SwingUtilities.invokeLater(() -> {
             Interfaz treeExample = new Interfaz();
             treeExample.setVisible(true);
+            
+
         });
     }
 }

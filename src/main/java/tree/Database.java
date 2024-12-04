@@ -57,7 +57,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
         }
 
         return results; 
@@ -83,7 +83,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
         }
         return results; 
     }
@@ -112,7 +112,7 @@ public class Database
         }
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
         }
 
         return alertName;
@@ -207,7 +207,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
         }
         return arrayNodoInformation;
     }
@@ -233,7 +233,7 @@ public class Database
         }
          catch (Exception e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
         }
         return nombre;
     }
@@ -271,7 +271,7 @@ public class Database
             } 
             catch (SQLException e) 
             {
-                e.printStackTrace();
+                System.out.println(e);
             }
         }
         else 
@@ -313,7 +313,8 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println("Ocurrió un error al consultar los detalles del activo con ID: " + e);
+            
         }
 
         return activoDetails;
@@ -344,7 +345,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println("Ocurrió un error al consultar los detalles del VariableId con ID: " + e);
         }
 
         return variableDetails;
@@ -374,7 +375,8 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println("Ocurrió un error al consultar los detalles del sentenciaId con ID: " + e);
+
         }
     
         return sentenciaDetails;
@@ -398,7 +400,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
             return false;
         }
     }
@@ -427,7 +429,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
             return false;
         }
     }
@@ -457,7 +459,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
             return false;
         }
     }
@@ -485,7 +487,7 @@ public class Database
         } 
         catch (SQLException e) 
         {
-            e.printStackTrace();
+            System.out.println(e);
             return false;
         }
     }
@@ -624,14 +626,76 @@ public class Database
         catch (SQLException e) 
         {
             System.err.println("Error al obtener los valores de activoId: " + e.getMessage());
-            e.printStackTrace();
         }
     
         return activosMap;
     }
-    
-    
 
+
+    public Map<Integer, String> obtenerNombresNodos() 
+    {
+        // Mapa para almacenar los resultados
+        Map<Integer, String> nodoArbolMap = new HashMap<>();
+
+        // Consulta SQL para seleccionar nodoArbolId y nombre
+        String selectQuery = "SELECT nodoArbolId, nombre FROM nodoarbol";
+
+        try
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Iterar sobre los resultados y llenar el mapa
+            while (resultSet.next()) 
+            {
+                int nodoArbolId = resultSet.getInt("nodoArbolId");
+                String nombre = resultSet.getString("nombre");
+                nodoArbolMap.put(nodoArbolId, nombre);
+            }
+
+        } 
+        catch (SQLException e) 
+        {
+            System.out.println(e);
+        }
+
+        return nodoArbolMap;
+    }
+
+
+    public Boolean InsertRelacionesNodos(Integer nodoArbolIdPadre, Integer nodoArbolIdHijo, String opcionTf) 
+    {
+        String guardarRelacionQuery = "INSERT INTO nodosHijos (nodoPadre, nodoHijo, opcionTF) VALUES (? , ? , ?)";
+                
+        try 
+        {
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatement = connection.prepareStatement(guardarRelacionQuery);
+            preparedStatement.setInt(1, nodoArbolIdPadre);
+            preparedStatement.setInt(2, nodoArbolIdHijo);
+            preparedStatement.setString(3, opcionTf);
+
+
+            int resultSet = preparedStatement.executeUpdate();
+
+            if (resultSet > 0) 
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        } 
+        catch (SQLException e) 
+        {
+            // Manejo de excepciones: imprimir la traza y/o registrar el error
+            System.err.println("Error al intentar insertar relación en nodosHijos: " + e.getMessage());
+            return false;
+        }
+    }
     
     
     
