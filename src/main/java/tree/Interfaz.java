@@ -19,10 +19,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -60,7 +61,7 @@ public class Interfaz extends JFrame
     private List<String> listaDatosTipoNodo = new ArrayList<>();
     private DefaultMutableTreeNode root; // Nodo raíz del árbol
     private JTree tree; // Componente JTree
-    private DefaultTreeModel treeModel;
+    public DefaultTreeModel treeModel;
 
     // Clase que contiene los formularios respecto al tipo de nodo
     private Forms forms;
@@ -94,8 +95,11 @@ public class Interfaz extends JFrame
 
     // Crear el modelo del árbol
     root = new DefaultMutableTreeNode(nodoNombreRaiz); // Inicializa root con un nombre
+
     treeModel = new DefaultTreeModel(root); // Inicializa treeModel con root
     tree = new JTree(treeModel); // Crea el JTree utilizando treeModel
+
+
 
     // Configurar el JTree
     tree.setBackground(BACKGROUND_COLOR);
@@ -117,7 +121,6 @@ public class Interfaz extends JFrame
     botonesPanel.setBackground(new Color(184, 211, 173)); // Fondo consistente
     botonesPanel.setPreferredSize(new Dimension(200, 115)); // 200 px de ancho, altura automática
 
-
     // Configurar GridBagConstraints para el diseño
     GridBagConstraints gbcBotones = new GridBagConstraints();
     gbcBotones.insets = new Insets(5, 5, 5, 5); // Margen entre botones
@@ -134,9 +137,7 @@ public class Interfaz extends JFrame
         if(configurationGetter.getPermisosUsuario())
         {
             btnCrearRelacionNodos.setVisible(true);
-    
         }
-
 
     gbcBotones.gridx = 0; // Primera columna
     gbcBotones.gridy = 0; // Primera fila
@@ -148,12 +149,12 @@ public class Interfaz extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             selectedOption = "Crear relaciones nodos";
-            
+                                            
             // Llamar al método loloForms
             mostrarFormularioSeleccionado(selectedOption, formPanel);
         }
     });
-    
+                                
     JButton btnCambiarNombreRaiz = new JButton("Cambiar nombre nodo raiz");
     btnCambiarNombreRaiz.setFont(new Font("Arial", Font.BOLD, 16));
     btnCambiarNombreRaiz.setBackground(new Color(135, 206, 250)); // Color azul claro
@@ -312,7 +313,6 @@ public class Interfaz extends JFrame
                         formPanel.removeAll();
                         formPanel.revalidate();
                         formPanel.repaint();
-
                     }
                     else
                     {
@@ -473,7 +473,6 @@ public class Interfaz extends JFrame
             // Añadir el panel de botones al panel del árbol
             treePanel.add(botonesPanel, BorderLayout.SOUTH);
             
-
             // Configurar el panel derecho para formularios
             formPanel = new JPanel();
             formPanel.setLayout(new BorderLayout()); // Usar BorderLayout para ajustar componentes
@@ -498,7 +497,10 @@ public class Interfaz extends JFrame
             // Cargar datos del árbol
             createTreeModel();
             setLocationRelativeTo(null);
+            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
+            obtenerRelacionesDesdeArbol(rootNode);
 }
+
 
 public void actualizarNombreNodoRaiz() 
 {
@@ -576,11 +578,12 @@ public void actualizarNombreNodoRaiz()
             Integer findNodoArbolIdFromName = querys.getNodoArbolIdByName(selectedNode);
             if (selectedNode != null && selectedNode.getUserObject() != null) 
             {
-
+                System.out.println("este es el id " + findNodoArbolIdFromName.toString());
                 String tipoNodo = querys.findTypeOfNodo(findNodoArbolIdFromName.toString());
                 Integer nodoArbolId = findNodoArbolIdFromName;
 
-
+                System.out.println("y este es el nodo arbolID " + nodoArbolId  );
+                
                 List<String> dataFromNodo = querys.getDataForNodoArbol(nodoArbolId);
                 
                 // Limpiar el panel derecho antes de agregar un nuevo formulario
@@ -661,10 +664,7 @@ public void actualizarNombreNodoRaiz()
                 formPanel.revalidate();
                 formPanel.repaint();
             }
-            else
-            {
 
-            }
         });
     }
 
@@ -683,6 +683,14 @@ public void actualizarNombreNodoRaiz()
         tree.revalidate();
         tree.repaint();
     }
+
+    public void limpiarFormPanel() 
+    {
+        formPanel.removeAll();
+        formPanel.revalidate();
+        formPanel.repaint();
+    }
+    
     
 
     private void construirHijos(String idNodoPadre, DefaultMutableTreeNode nodoPadre, Map<Integer, DefaultMutableTreeNode> mapaNodos) {
@@ -741,12 +749,107 @@ public void actualizarNombreNodoRaiz()
         }
 
         // Refrescar el dynamicFormPanel
+        System.out.println("deberia pasar por aqui");
         dynamicFormPanel.revalidate();
         dynamicFormPanel.repaint();
+
 
         return resultados;
     }
 
+    private void obtenerRelacionesDesdeArbol(DefaultMutableTreeNode node) 
+    {
+        // Obtén la información del nodo actual
+        Object userObject = node.getUserObject();
+        String nombreNodo = userObject.toString(); // Suponiendo que sea un String
+    
+        // Recorre los hijos
+        for (int i = 0; i < node.getChildCount(); i++) {
+            DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
+            Object childUserObject = childNode.getUserObject();
+            String nombreHijo = childUserObject.toString();
+    
+            // Aquí tienes la relación padre-hijo
+            System.out.println("Padre: " + nombreNodo + " -> Hijo: " + nombreHijo);
+    
+            // Llamada recursiva para procesar los subárboles
+            obtenerRelacionesDesdeArbol(childNode);
+        }
+    }
+
+    public DefaultMutableTreeNode buscarNodoPorNombre(DefaultMutableTreeNode root, String nombreBuscado) 
+    {
+        if (root.getUserObject() != null && root.getUserObject().toString().equals(nombreBuscado)) {
+            return root;
+        }
+    
+        for (int i = 0; i < root.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
+            DefaultMutableTreeNode result = buscarNodoPorNombre(child, nombreBuscado);
+            if (result != null) {
+                return result;
+            }
+        }
+    
+        return null; // Si no se encontró
+    }
+    
+
+    public List<String> obtenerAncestrosDesdeNodo(DefaultMutableTreeNode nodo) 
+    {
+        List<String> ancestros = new ArrayList<>();
+        DefaultMutableTreeNode nodoActual = nodo;
+    
+        // Subir por la cadena de padres hasta llegar a la raíz
+        while (nodoActual.getParent() != null) 
+        {
+            DefaultMutableTreeNode padre = (DefaultMutableTreeNode) nodoActual.getParent();
+            Object userObject = padre.getUserObject();
+            // Suponiendo que el userObject es un String con el nombre del nodo
+            String nombrePadre = userObject.toString();
+            ancestros.add(nombrePadre);
+
+            nodoActual = padre;
+        }
+        return ancestros;
+    }
+
+    public List<String> obtenerNodosConHijos(DefaultMutableTreeNode nodo) 
+    {
+    List<String> nodosConFamilia = new ArrayList<>();
+
+    // Utilizaremos una cola para hacer una búsqueda en anchura (BFS)
+    Queue<DefaultMutableTreeNode> cola = new LinkedList<>();
+    cola.add(nodo);
+
+    while (!cola.isEmpty()) 
+    {
+        DefaultMutableTreeNode nodoActual = cola.poll();
+
+        // Verificar si tiene hijos
+        int cantidadHijos = nodoActual.getChildCount();
+        if (cantidadHijos > 0) {
+            // Este nodo tiene hijos, por lo tanto es un "padre con familia"
+            Object userObject = nodoActual.getUserObject();
+            String nombreNodo = userObject.toString();
+            nodosConFamilia.add(nombreNodo);
+
+            // Agregar todos sus hijos a la cola para seguir explorando
+            for (int i = 0; i < cantidadHijos; i++) {
+                DefaultMutableTreeNode hijo = (DefaultMutableTreeNode) nodoActual.getChildAt(i);
+                cola.add(hijo);
+            }
+        } else {
+            // Aunque no tenga hijos, seguimos agregando su "nada" a la cola 
+            // no es necesario ya que un nodo sin hijos no sigue descendiendo
+            // En este caso no agregamos nada más.
+        }
+    }
+
+    return nodosConFamilia;
+}
+
+    
     //Este sera el metodo encargado de verificar los permisos de usuario
     public void verifyPermissionsUser() 
     {
@@ -774,7 +877,7 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.contains("xqos_admin")) 
+                if (lineaNormalizada.contains("ora_db")) 
                 {
                     configurationGetter.setPermisosUsuario(true);
                     System.out.println("Estás en el grupo XQOS_Admin.");

@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import tree.getters.ActivoFormSimplificadoGetter;
 import tree.getters.ConfigurationGetter;
@@ -307,6 +308,8 @@ public class Forms
         // Crear label y combo box para 'ActivoId'
         JLabel lblActivoId = new JLabel("ActivoId:");
         JComboBox<Integer> comboActivoId = new JComboBox<>();
+
+        System.out.println("este es variables el tipo y el activoID " + txtTipoVC.getText() + " " + comboActivoId.getSelectedItem());
 
         // Obtener el mapa de activos (ID y nombre)
         Map<Integer, String> getActivos = querys.obtenerSoloActivoId();
@@ -674,7 +677,7 @@ public void activoFormSimplificado(JPanel panel)
     if (comboActivoId.getSelectedItem() != null) 
     {
         comboActivoId.setSelectedItem(comboActivoId.getSelectedItem()); // Simula la interacción
-}
+    }
 
 
     // Añadir componentes al formularioPanel
@@ -771,7 +774,8 @@ public void configuracionNodoRaiz(JPanel panel)
     txtNombreRaiz.addKeyListener(new KeyAdapter() {
         @Override
         public void keyTyped(KeyEvent e) {
-            if (txtNombreRaiz.getText().length() >= 30) {
+            if (txtNombreRaiz.getText().length() >= 30) 
+            {
                 e.consume();
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -782,7 +786,8 @@ public void configuracionNodoRaiz(JPanel panel)
     JButton btnGuardar = new JButton("Guardar");
     btnGuardar.addActionListener(e -> {
         String nuevoNombre = txtNombreRaiz.getText().trim();
-        if (!nuevoNombre.isEmpty()) {
+        if (!nuevoNombre.isEmpty()) 
+        {
             configurationGetter.setNodoNombreRaiz(nuevoNombre);
 
             // Llamar al método en la interfaz principal para actualizar el árbol
@@ -794,7 +799,9 @@ public void configuracionNodoRaiz(JPanel panel)
                 "Éxito",
                 JOptionPane.INFORMATION_MESSAGE
             );
-        } else {
+        } 
+        else 
+        {
             JOptionPane.showMessageDialog(
                 panel,
                 "El nombre del nodo raíz no puede estar vacío.",
@@ -864,7 +871,6 @@ public void crearRelacionesNodoForm(JPanel panel)
         hijos.setEnabled(false);
         btnGuardar.setEnabled(false);
 
-
     if (!obtenerNodos.isEmpty()) 
     {
         for (String nombre : obtenerNodos.values()) 
@@ -893,30 +899,84 @@ public void crearRelacionesNodoForm(JPanel panel)
 
                 hijos.removeAllItems();
                 nodosHijosDisponibles.clear();
-    
-                for (String nombreHijos : obtenerNodos.values()) 
-                {
-                    nodosHijosDisponibles.add(nombreHijos);
-                }
-        
-                //eliminar el nodo padre para que no este disponible para ser nodo hijo
-        
-                nodosHijosDisponibles.remove(nodoPadreEliminar);
-        
-                 
+
+             //ojo aqui implementaremos la logica para que solo aparezcan los nodos que no tienen familia
+             List<String> nodosSinfamilia = querys.obtenerNodosSinRelacion();
+             if (!nodosSinfamilia.isEmpty()) 
+             {
                 
+                System.out.println("existen nodos disponibles sin familia");
+                 for (int i = 0; i < nodosSinfamilia.size(); i++) 
+                 {
+                    System.out.println("estos son " + nodosSinfamilia.get(i));
+                     nodosHijosDisponibles.add(nodosSinfamilia.get(i));
+                 }
+             }
+             else
+             {
+                 System.out.println("esta vacio y ojo el nodosSiNfAMILIA");
+                 hijos.addItem("No existen nodos disponibles");
+
+                 // Establecer una opción predeterminada
+                 hijos.setSelectedItem("No existen nodos disponibles");
+                 hijos.setEnabled(false);
+                 btnGuardar.setEnabled(false);
+             }
+
+                System.out.println("este NODO PADRE ELIMINARSE " );
+                nodosHijosDisponibles.remove(nodoPadreEliminar);
+
+                DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) interfazPrincipal.treeModel.getRoot();
+                // Llamar al método para buscar el nodo por nombre
+
+                DefaultMutableTreeNode nodoEncontrado = interfazPrincipal.buscarNodoPorNombre(rootNode, (String) nodos.getSelectedItem());
+                List<String> buscarHijosNodos = interfazPrincipal.obtenerNodosConHijos(rootNode);
+
+                if (!buscarHijosNodos.isEmpty()) 
+                {
+                    for(String buscarHijo : buscarHijosNodos)
+                    {
+                        nodosHijosDisponibles.remove(buscarHijo);
+
+                    }
+                }
+
+                //validacion para verificar que los nodos no tengan ancestros
+                if (nodoEncontrado != null) 
+                {
+                    // Ahora que tienes el nodo, obtén sus ancestros
+                    List<String> ancestros = interfazPrincipal.obtenerAncestrosDesdeNodo(nodoEncontrado);
+                    // Haz lo que necesites con la lista de ancestros
+                    for (String ancestro : ancestros) 
+                    {
+                        System.out.println("Ancestro: " + ancestro);
+                        nodosHijosDisponibles.remove(ancestro);
+                    }
+                } 
+                else 
+                {
+                    System.out.println("No se encontró un nodo con el nombre: x");
+                }
+
                 for (int i = 0; i < nodosHijosDisponibles.size(); i++) 
                 {
+                    System.out.println("estos son los que se mostraran en el ckecbox nodosHijos " + nodosHijosDisponibles.get(i));
                     hijos.addItem(nodosHijosDisponibles.get(i));
                 }
                 
-            
+                if (nodosHijosDisponibles.isEmpty()) 
+                {
+                    hijos.addItem("No existen nodos disponibles");
+
+                    // Establecer una opción predeterminada
+                    hijos.setSelectedItem("No existen nodos disponibles");
+                    hijos.setEnabled(false);
+                    btnGuardar.setEnabled(false);
+                }
+                
         }
-    
             });
-        
     }
-    
     else
     {
         JOptionPane.showMessageDialog(
@@ -931,13 +991,6 @@ public void crearRelacionesNodoForm(JPanel panel)
     JLabel nodoHijo = new JLabel("Seleccione el nodo hijo:");
     //JComboBox<String> hijos = new JComboBox<>();
 
-    String selectedTipo = (String) hijos.getSelectedItem();
-
-
-        for (int i = 0; i < nodosHijosDisponibles.size(); i++) 
-        {
-            hijos.addItem(nodosHijosDisponibles.get(i));
-        }
 
     JLabel opcionTF = new JLabel("Seleccione opcionTF:");
     JComboBox<String> opcionTFJComboBox = new JComboBox<>(new String[]{"T","F"});
@@ -948,9 +1001,6 @@ public void crearRelacionesNodoForm(JPanel panel)
     //btnGuardar = new JButton("Guardar");
     btnGuardar.addActionListener(e -> {
         
-       // System.out.println("NODO PADRE " + nodos.getSelectedItem());
-       // System.out.println("NODO HIJO " + hijos.getSelectedItem());
-
         // esta logica sera la responsable de obtener el nodoArbolId del map obtenerNodos
         for (Map.Entry<Integer, String> idNodoArbol : obtenerNodos.entrySet()) 
         {
@@ -964,37 +1014,57 @@ public void crearRelacionesNodoForm(JPanel panel)
             {
                 System.out.println("Llave encontrada Hijo : " + idNodoArbol.getKey());
                 nodoArbolIdHijo = idNodoArbol.getKey();
-
             }
         }
 
-        //enviar a la base de datos
-        Boolean enviarRelacionNodoArbol = querys.InsertRelacionesNodos(nodoArbolIdPadre, nodoArbolIdHijo, (String) opcionTFJComboBox.getSelectedItem());
-        
-        if (enviarRelacionNodoArbol) 
-        {
-            JOptionPane.showMessageDialog(
-                panel,
-                "Nodo Relacionado Con Éxito.",
-                "Éxito",
-                JOptionPane.INFORMATION_MESSAGE
-            );
+            System.out.println("estos son los id de nodo padre y hijo " + nodoArbolIdPadre + " " + nodoArbolIdHijo);
 
-            // Reiniciar el panel
-            interfazPrincipal.reloadTreePanel();
-        }
-        else
-        {
-            JOptionPane.showMessageDialog(
-                panel,
-                "No se puede asignar un nuevo padre al nodo seleccionado porque este ya pertenece a una jerarquía existente",
-                "Error", // Título de la ventana
-                JOptionPane.ERROR_MESSAGE  // Tipo de mensaje
-            );
-        }
+            //verificar si existe un solo nodo para bloquear el ckeckbox de hijos
+            int cantidadElementosHijos = hijos.getItemCount();
+
+            if (cantidadElementosHijos == 1)  
+            {
+                hijos.addItem("No existen nodos disponibles");
+
+                // Establecer una opción predeterminada
+                hijos.setSelectedItem("No existen nodos disponibles");
+                hijos.setEnabled(false);
+                btnGuardar.setEnabled(false);
+            }
+
+        //enviar a la base de datos
+            Boolean enviarRelacionNodoArbol = querys.InsertRelacionesNodos(nodoArbolIdPadre, nodoArbolIdHijo, (String) opcionTFJComboBox.getSelectedItem());
+            
+            System.out.println("esto retorno ten ojo " + enviarRelacionNodoArbol);
+            if (enviarRelacionNodoArbol) 
+            {
+                JOptionPane.showMessageDialog(
+                    panel,
+                    "Nodo Relacionado Con Éxito.",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+
+                // Reiniciar el panel
+                interfazPrincipal.reloadTreePanel();
+                interfazPrincipal.limpiarFormPanel();
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(
+                    panel,
+                    "No se puede asignar un nuevo padre al nodo seleccionado ",
+                    "Error", // Título de la ventana
+                    JOptionPane.ERROR_MESSAGE  // Tipo de mensaje
+                );
+            }
+        
+         
+
         
     });
     // Añadir componentes al formulario
+
 
     gbc.gridx = 0;
     gbc.gridy = 0;
@@ -1028,7 +1098,7 @@ public void crearRelacionesNodoForm(JPanel panel)
     // Refrescar el panel
     panel.revalidate();
     panel.repaint();
+
 }
 
-    
 }

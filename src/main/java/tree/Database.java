@@ -127,7 +127,7 @@ public class Database
         try 
         {
             // Query para confirmar tipo de nodo
-            String query = "SELECT tipoNodo, modoarbolid FROM nodoArbol WHERE nodoArbolId = ?";
+            String query = "SELECT tipoNodo FROM nodoArbol WHERE nodoArbolId = ?";
             
             // Queries para obtener información específica
             String activosQuery = "SELECT * FROM activos WHERE activoId = ?";
@@ -146,7 +146,6 @@ public class Database
             if (resultSet.next()) 
             {
                 tipoNodo = resultSet.getString("tipoNodo");
-                modoarbolid = resultSet.getInt("modoarbolid");
             } 
             else 
             {
@@ -162,19 +161,19 @@ public class Database
                 case "activos":
                 case "nodo de activos":
                     detailStatement = connection.prepareStatement(activosQuery);
-                    detailStatement.setInt(1, modoarbolid);
+                    detailStatement.setInt(1, nodoArbolId);
                     break;
     
                 case "variables":
                 case "nodo de variables":
                     detailStatement = connection.prepareStatement(variablesQuery);
-                    detailStatement.setInt(1, modoarbolid);
+                    detailStatement.setInt(1, nodoArbolId);
                     break;
     
                 case "sentencias":
                 case "nodo de sentencias":
                     detailStatement = connection.prepareStatement(sentenciasQuery);
-                    detailStatement.setInt(1, modoarbolid);
+                    detailStatement.setInt(1, nodoArbolId);
                     break;
         
     
@@ -493,6 +492,9 @@ public class Database
     }
 
 
+
+//este es el original
+/* 
     public Boolean insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> mapTipoNodo)                       
     {
         try
@@ -604,6 +606,107 @@ public class Database
         return true;
     }
 
+    */
+
+    public Boolean insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> mapTipoNodo)                       
+    {
+        try
+        {
+            //nodo
+            String query = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, nombre) VALUES (?, ?, ?)";
+            Connection connection = DriverManager.getConnection(url);
+            PreparedStatement preparedStatementQuery = connection.prepareStatement(query);
+
+            //obtener el maximo nodoArbolId
+            String maxNodoArbolIdQuery = "SELECT MAX(nodoArbolId) AS maxNodoArbolId FROM nodoarbol";
+            Statement statementNodoArbolID = connection.createStatement();
+            ResultSet resultSet = statementNodoArbolID.executeQuery(maxNodoArbolIdQuery);
+
+            int nodoArbolId = 1; // Valor inicial si la tabla está vacía
+            if (resultSet.next()) 
+            {
+                int maxNodoArbolId = resultSet.getInt("maxNodoArbolId");
+                nodoArbolId = maxNodoArbolId + 1; // Incrementar el último ID
+            }
+
+
+            int resultSetQuery;
+
+            switch (tipoNodo) 
+            {
+            
+                case "activos":
+                    String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
+                    PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo);
+                    //insert para tabla nodoArbol
+                    preparedStatementQuery.setInt(1, nodoArbolId);
+                    preparedStatementQuery.setString(2, tipoNodo);
+                    preparedStatementQuery.setString(3, nombre);
+
+                    //insert para Activos                    
+                    preparedStatementQueryActivo.setInt(1, nodoArbolId);
+                    preparedStatementQueryActivo.setString(2, mapTipoNodo.get(1));
+                    preparedStatementQueryActivo.setString(3, mapTipoNodo.get(2));
+                    preparedStatementQueryActivo.setString(4, mapTipoNodo.get(3));
+
+                    resultSetQuery = preparedStatementQuery.executeUpdate();
+                    int  resultSetActivos = preparedStatementQueryActivo.executeUpdate();
+
+                    break;
+                case "variables":
+                    String queryVariable = "INSERT INTO  variablesContexto (VariableId,tipo, activoId) VALUES (?, ?, ?)";
+                    PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable);
+
+                    //insert para tabla nodoArbol
+                    preparedStatementQuery.setInt(1, nodoArbolId);
+                    preparedStatementQuery.setString(2, tipoNodo);
+                    preparedStatementQuery.setString(3, nombre);
+
+                    //insert para Variables                    
+                    preparedStatementQueryVariables.setInt(1, nodoArbolId);
+                    preparedStatementQueryVariables.setString(2, mapTipoNodo.get(1));
+                    preparedStatementQueryVariables.setInt(3, Integer.parseInt(mapTipoNodo.get(2)));
+
+                    resultSetQuery = preparedStatementQuery.executeUpdate();
+                    int  resultSetVariables = preparedStatementQueryVariables.executeUpdate();
+
+                    break;
+                case "sentencias":
+
+                    String querySentencias = "INSERT INTO sentencias (sentenciaId,estado) VALUES (?, ?)";
+                    PreparedStatement preparedStatementQuerySentencias = connection.prepareStatement(querySentencias);
+
+
+                    //insert para tabla nodoArbol
+                    preparedStatementQuery.setInt(1, nodoArbolId);
+                    preparedStatementQuery.setString(2, tipoNodo);
+                    preparedStatementQuery.setString(3, nombre);
+
+                    // esta llegando null a sentencias
+
+                    preparedStatementQuerySentencias.setInt(1, nodoArbolId);
+                    preparedStatementQuerySentencias.setString(2, mapTipoNodo.get(1));
+
+                    resultSetQuery = preparedStatementQuery.executeUpdate();
+                    int resultSetSentencias = preparedStatementQuerySentencias.executeUpdate();
+                    break;
+                default:
+                    System.out.println("Tipo de nodo inválido: " + tipoNodo);
+            }
+    
+        }
+      
+
+        catch (SQLException e) 
+        {
+            System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+
 
     public Map<Integer, String> obtenerSoloActivoId() 
     {
@@ -664,26 +767,141 @@ public class Database
     }
 
 
-    public Boolean InsertRelacionesNodos(Integer nodoArbolIdPadre, Integer nodoArbolIdHijo, String opcionTf) 
+    public Boolean InsertRelacionesNodos(Integer nodoArbolIdPadre, Integer nodoArbolIdHijo, String opcionTf) {
+        Connection connection = null;
+    
+        // Query para verificar si ya existe la relación
+        String verificarRelacionQuery = "SELECT COUNT(*) FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
+    
+        // Query para eliminar la relación existente
+        String eliminarRelacionQuery = "DELETE FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
+    
+        // Query para insertar la nueva relación
+        String guardarRelacionQuery = "INSERT INTO nodosHijos (nodoPadre, nodoHijo, opcionTF) VALUES (?, ?, ?)";
+    
+        try {
+            // Establecer conexión
+            connection = DriverManager.getConnection(url);
+            connection.setAutoCommit(false);
+    
+            // Verificar si la relación ya existe
+            try (PreparedStatement verificarStatement = connection.prepareStatement(verificarRelacionQuery)) {
+                verificarStatement.setInt(1, nodoArbolIdPadre);
+                verificarStatement.setInt(2, nodoArbolIdHijo);
+                ResultSet resultSet = verificarStatement.executeQuery();
+    
+                if (resultSet.next() && resultSet.getInt(1) > 0) {
+                    // Si existe la relación, eliminarla
+                    try (PreparedStatement eliminarStatement = connection.prepareStatement(eliminarRelacionQuery)) {
+                        eliminarStatement.setInt(1, nodoArbolIdPadre);
+                        eliminarStatement.setInt(2, nodoArbolIdHijo);
+                        eliminarStatement.executeUpdate();
+                    }
+                }
+            }
+    
+            // Insertar la nueva relación
+            try (PreparedStatement insertarStatement = connection.prepareStatement(guardarRelacionQuery)) {
+                insertarStatement.setInt(1, nodoArbolIdPadre);
+                insertarStatement.setInt(2, nodoArbolIdHijo);
+                insertarStatement.setString(3, opcionTf);
+    
+                int rowsInserted = insertarStatement.executeUpdate();
+                if (rowsInserted > 0) {
+                    connection.commit();
+                    return true; // Éxito
+                } else {
+                    connection.rollback();
+                    return false; // Fallo al insertar
+                }
+            }
+        } catch (SQLException e) {
+            // Manejo de errores
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    System.err.println("Error al hacer rollback: " + rollbackEx.getMessage());
+                }
+            }
+            System.err.println("Error al intentar insertar relación en nodosHijos: " + e.getMessage());
+            return false;
+        } finally {
+            // Cerrar conexión
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    System.err.println("Error al cerrar la conexión: " + closeEx.getMessage());
+                }
+            }
+        }
+    }
+    
+
+
+    public boolean verificarRelacionNodo(int nodoPadre, int nodoHijo) 
     {
-        String guardarRelacionQuery = "INSERT INTO nodosHijos (nodoPadre, nodoHijo, opcionTF) VALUES (? , ? , ?)";
-                
+        String query = "SELECT COUNT(*) AS existeRelacion FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            
+            preparedStatement.setInt(1, nodoPadre);
+            preparedStatement.setInt(2, nodoHijo);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            
+            if (resultSet.next()) {
+                return resultSet.getInt("existeRelacion") > 0; // Retorna true si ya existe
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // No existe la relación
+    }
+
+
+
+    /* 
+
+    public Boolean verificarRelacionPadreHijo(Integer nodoArbolIdPadre) 
+    {
+        
+        String guardarRelacionQuery = "SELECT nodoPadre,nodoHijo FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
+        String eliminarRelacionQuery = "DELETE FROM nodosHijos WHERE nodoPadre";
+
         try 
         {
             Connection connection = DriverManager.getConnection(url);
             PreparedStatement preparedStatement = connection.prepareStatement(guardarRelacionQuery);
             preparedStatement.setInt(1, nodoArbolIdPadre);
-            preparedStatement.setInt(2, nodoArbolIdHijo);
-            preparedStatement.setString(3, opcionTf);
 
 
-            int resultSet = preparedStatement.executeUpdate();
 
-            if (resultSet > 0) 
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) 
             {
-                return true;
-            }
-            else
+                int padre = resultSet.getInt("nodoPadre");
+                int hijo = resultSet.getInt("nodoHijo");
+
+                PreparedStatement preparedStatementForDelete = connection.prepareStatement(eliminarRelacionQuery);
+                preparedStatementForDelete.setInt(1, nodoArbolIdPadre);
+                preparedStatementForDelete.setInt(2, nodoArbolIdHijo);
+
+                int resultSetDelete = preparedStatement.executeUpdate();
+
+                if (resultSetDelete > 0) 
+                {
+                    return true;
+                }
+                else
+                {
+                    System.out.println("Ha ocurrido un error interno al eliminar la relacion");
+                    return false;
+                }
+
+            } 
+            else 
             {
                 return false;
             }
@@ -696,6 +914,121 @@ public class Database
             return false;
         }
     }
+
+    */
+
+
+    public List<String> obtenerNodosSinRelacion() 
+    {
+        String query = "SELECT nodoArbolId, nombre FROM nodoarbol WHERE nodoArbolId NOT IN (SELECT nodoHijo FROM nodosHijos)";
+        List<String> nodosDisponibles = new ArrayList<>();
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) 
+        {
+    
+            while (resultSet.next()) 
+            {
+                String nodoNombre = resultSet.getString("nombre");
+                nodosDisponibles.add(nodoNombre);
+                System.out.println("estos son los nodos que no tienen familia " + nodoNombre);
+            }
+    
+        } catch (SQLException e) {
+            System.err.println("Error al obtener nodos sin relación: " + e.getMessage());
+        }
+    
+        return nodosDisponibles;
+    }
+
+
+    public boolean esAncestro(int nodoPadre, int nodoHijo) 
+    {
+        String query = """
+            WITH Ancestros AS (
+                SELECT nodoPadre, nodoHijo
+                FROM nodosHijos
+                WHERE nodoHijo = ?
+                UNION ALL
+                SELECT nh.nodoPadre, a.nodoPadre
+                FROM nodosHijos nh
+                INNER JOIN Ancestros a ON nh.nodoHijo = a.nodoPadre
+            )
+            SELECT 1
+            FROM Ancestros
+            WHERE nodoPadre = ?;
+        """;
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+    
+            stmt.setInt(1, nodoPadre); // Nodo desde donde comenzamos a buscar ancestros
+            stmt.setInt(2, nodoHijo); // Nodo que queremos verificar como ancestro
+            ResultSet rs = stmt.executeQuery();
+    
+            return rs.next(); // Si hay resultados, existe un ciclo
+        } catch (SQLException e) 
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+
+
+
+    public boolean existeComoNodoPadre(int nodoId) 
+    {
+        String query = "SELECT 1 FROM nodosHijos WHERE nodoPadre = ?";
+        
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            
+            stmt.setInt(1, nodoId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                // Si el ResultSet tiene al menos un registro, significa que existe como nodoPadre
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+                                                                    
+    public List<Integer> obtenerTodosLosNodosPadres() 
+    {                                       
+        List<Integer> nodosPadres = new ArrayList<>();
+        String query = "SELECT nodoPadre FROM nodosHijos";
+    
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) 
+        {
+    
+            while (rs.next()) {
+                nodosPadres.add(rs.getInt("nodoPadre"));
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return nodosPadres;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
