@@ -63,6 +63,9 @@ public class Database
         return results; 
     }
 
+
+    
+
     public List<String> findNodesChildren(String idNodeParent)
     {
         String query = "SELECT * FROM nodosHijos WHERE nodoPadre = ?";
@@ -106,7 +109,6 @@ public class Database
             {
                 // Supongamos que la tabla "alertas" tiene una columna llamada "alertaNombre"
                 alertName = resultSet.getString("tipoNodo");
-                System.out.println("Se detecto nodo de tipo " + alertName);
             }
 
         }
@@ -492,219 +494,128 @@ public class Database
     }
 
 
-
-//este es el original
-/* 
     public Boolean insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> mapTipoNodo)                       
-    {
-        try
-        {
-            String query = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, modoarbolid, nombre) VALUES (?, ?, ?, ?)";
-            Connection connection = DriverManager.getConnection(url);
-            PreparedStatement preparedStatementQuery = connection.prepareStatement(query);
-
-            //obtener el maximo nodoArbolId
-            String maxNodoArbolIdQuery = "SELECT MAX(nodoArbolId) AS maxNodoArbolId FROM nodoarbol";
-            Statement statementNodoArbolID = connection.createStatement();
-            ResultSet resultSet = statementNodoArbolID.executeQuery(maxNodoArbolIdQuery);
-
-            int nodoArbolId = 1; // Valor inicial si la tabla está vacía
-            if (resultSet.next()) 
-            {
-                int maxCauseId = resultSet.getInt("maxNodoArbolId");
-                nodoArbolId = maxCauseId + 1; // Incrementar el último ID
-            }
-
-            // Paso 1: obtener el maximo modoarbolid
-            String maxCauseIdQuery = "SELECT MAX(modoarbolid) AS maxModoarbolId FROM nodoarbol";
-            Statement statementCauseId = connection.createStatement();
-            ResultSet resultSetCauseId = statementCauseId.executeQuery(maxCauseIdQuery);
-
-            int modoarbolId = 1; // Valor inicial si la tabla está vacía
-            if (resultSetCauseId.next()) 
-            {
-                int maxModoarbolId = resultSetCauseId.getInt("maxModoarbolId");
-                modoarbolId = maxModoarbolId + 1; // Incrementar el último ID
-            }
-
-            int resultSetQuery;
-
-            switch (tipoNodo) 
-            {
-                case "activos":
-                    String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
-                    PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo);
-
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, modoarbolId);
-                    preparedStatementQuery.setString(4, nombre);
-
-                    //insert para Activos                    
-                    preparedStatementQueryActivo.setInt(1, modoarbolId);
-                    preparedStatementQueryActivo.setString(2, mapTipoNodo.get(1));
-                    preparedStatementQueryActivo.setString(3, mapTipoNodo.get(2));
-                    preparedStatementQueryActivo.setString(4, mapTipoNodo.get(3));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int  resultSetActivos = preparedStatementQueryActivo.executeUpdate();
-
-                    break;
-                case "variables":
-                    String queryVariable = "INSERT INTO  variablesContexto (VariableId,tipo, activoId) VALUES (?, ?, ?)";
-                    PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable);
-
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, modoarbolId);
-                    preparedStatementQuery.setString(4, nombre);
-
-                    //insert para Variables                    
-                    preparedStatementQueryVariables.setInt(1, modoarbolId);
-                    preparedStatementQueryVariables.setString(2, mapTipoNodo.get(1));
-                    preparedStatementQueryVariables.setInt(3, Integer.parseInt(mapTipoNodo.get(2)));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int  resultSetVariables = preparedStatementQueryVariables.executeUpdate();
-
-                    break;
-                case "sentencias":
-
-                    String querySentencias = "INSERT INTO sentencias (sentenciaId,estado) VALUES (?, ?)";
-                    PreparedStatement preparedStatementQuerySentencias = connection.prepareStatement(querySentencias);
-
-
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setInt(3, modoarbolId);
-                    preparedStatementQuery.setString(4, nombre);
-
-                    // esta llegando null a sentencias
-
-                    preparedStatementQuerySentencias.setInt(1, modoarbolId);
-                    preparedStatementQuerySentencias.setString(2, mapTipoNodo.get(1));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int resultSetSentencias = preparedStatementQuerySentencias.executeUpdate();
-                    break;
-                default:
-                    System.out.println("Tipo de nodo inválido: " + tipoNodo);
-            }
+{
+    Connection connection = null;
+    String queryNodoArbol = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, nombre) VALUES (?, ?, ?)";
+    String maxNodoArbolIdQuery = "SELECT MAX(nodoArbolId) AS maxNodoArbolId FROM nodoarbol";
     
-        }
-      
-
-        catch (SQLException e) 
-        {
-            System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
-            return false;
-        }
-
-        return true;
-    }
-
-    */
-
-    public Boolean insertarNodoArbol(String tipoNodo, String nombre, Map<Integer,String> mapTipoNodo)                       
+    try 
     {
-        try
-        {
-            //nodo
-            String query = "INSERT INTO nodoarbol (nodoArbolId, tipoNodo, nombre) VALUES (?, ?, ?)";
-            Connection connection = DriverManager.getConnection(url);
-            PreparedStatement preparedStatementQuery = connection.prepareStatement(query);
+        connection = DriverManager.getConnection(url);
+         Statement statementNodoArbolID = connection.createStatement();
+         ResultSet resultSet = statementNodoArbolID.executeQuery(maxNodoArbolIdQuery);
+         
+         connection.setAutoCommit(false); // Iniciar transacción
 
-            //obtener el maximo nodoArbolId
-            String maxNodoArbolIdQuery = "SELECT MAX(nodoArbolId) AS maxNodoArbolId FROM nodoarbol";
-            Statement statementNodoArbolID = connection.createStatement();
-            ResultSet resultSet = statementNodoArbolID.executeQuery(maxNodoArbolIdQuery);
+         int nodoArbolId = 1; // Valor inicial si la tabla está vacía
+         if (resultSet.next()) 
+         {
+             int maxNodoArbolId = resultSet.getInt("maxNodoArbolId");
+             nodoArbolId = maxNodoArbolId + 1; // Incrementar el último ID
+         }
 
-            int nodoArbolId = 1; // Valor inicial si la tabla está vacía
-            if (resultSet.next()) 
-            {
-                int maxNodoArbolId = resultSet.getInt("maxNodoArbolId");
-                nodoArbolId = maxNodoArbolId + 1; // Incrementar el último ID
-            }
+         // Validar que mapTipoNodo contiene las claves necesarias
+         switch (tipoNodo) 
+         {
+             case "activos":
+                 if (!mapTipoNodo.containsKey(1) || !mapTipoNodo.containsKey(2) || !mapTipoNodo.containsKey(3)) {
+                     connection.rollback();
+                     return false;
+                 }
+                 if (mapTipoNodo.get(1) == null || mapTipoNodo.get(2) == null || mapTipoNodo.get(3) == null) {
+                     connection.rollback();
+                     return false;
+                 }
+                 break;
+             case "variables":
+                 if (!mapTipoNodo.containsKey(1) || !mapTipoNodo.containsKey(2)) {
+                     connection.rollback();
+                     return false;
+                 }
+                 if (mapTipoNodo.get(1) == null || mapTipoNodo.get(2) == null) {
+                     connection.rollback();
+                     return false;
+                 }
+                 break;
+             case "sentencias":
+                 if (!mapTipoNodo.containsKey(1)) {
+                     connection.rollback();
+                     return false;
+                 }
+                 if (mapTipoNodo.get(1) == null) {
+                     connection.rollback();
+                     return false;
+                 }
+                 break;
+             default:
+                 System.out.println("Tipo de nodo inválido: " + tipoNodo);
+                 return false;
+         }
 
+         // Insertar en nodoarbol
+         try (PreparedStatement preparedStatementQuery = connection.prepareStatement(queryNodoArbol)) {
+             preparedStatementQuery.setInt(1, nodoArbolId);
+             preparedStatementQuery.setString(2, tipoNodo);
+             preparedStatementQuery.setString(3, nombre);
+             preparedStatementQuery.executeUpdate();
+         }
 
-            int resultSetQuery;
+         // Insertar en la tabla específica según tipoNodo
+         switch (tipoNodo) 
+         {
+             case "activos":
+                 String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
+                 try (PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo)) {
+                     preparedStatementQueryActivo.setInt(1, nodoArbolId);
+                     preparedStatementQueryActivo.setString(2, mapTipoNodo.get(1));
+                     preparedStatementQueryActivo.setString(3, mapTipoNodo.get(2));
+                     preparedStatementQueryActivo.setString(4, mapTipoNodo.get(3));
+                     preparedStatementQueryActivo.executeUpdate();
+                 }
+                 break;
+             case "variables":
+                 String queryVariable = "INSERT INTO variablesContexto (VariableId, tipo, activoId) VALUES (?, ?, ?)";
+                 try (PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable)) {
+                     preparedStatementQueryVariables.setInt(1, nodoArbolId);
+                     preparedStatementQueryVariables.setString(2, mapTipoNodo.get(1));
+                     preparedStatementQueryVariables.setInt(3, Integer.parseInt(mapTipoNodo.get(2)));
+                     preparedStatementQueryVariables.executeUpdate();
+                 }
+                 break;
+             case "sentencias":
+                 String querySentencias = "INSERT INTO sentencias (sentenciaId, estado) VALUES (?, ?)";
+                 try (PreparedStatement preparedStatementQuerySentencias = connection.prepareStatement(querySentencias)) {
+                     preparedStatementQuerySentencias.setInt(1, nodoArbolId);
+                     preparedStatementQuerySentencias.setString(2, mapTipoNodo.get(1));
+                     preparedStatementQuerySentencias.executeUpdate();
+                 }
+                 break;
+             default:
+                 // Ya manejamos el tipo inválido antes
+                 break;
+         }
 
-            switch (tipoNodo) 
-            {
-            
-                case "activos":
-                    String queryActivo = "INSERT INTO activos (activoId, tipo, estado, monitor) VALUES (?, ?, ?, ?)";
-                    PreparedStatement preparedStatementQueryActivo = connection.prepareStatement(queryActivo);
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setString(3, nombre);
-
-                    //insert para Activos                    
-                    preparedStatementQueryActivo.setInt(1, nodoArbolId);
-                    preparedStatementQueryActivo.setString(2, mapTipoNodo.get(1));
-                    preparedStatementQueryActivo.setString(3, mapTipoNodo.get(2));
-                    preparedStatementQueryActivo.setString(4, mapTipoNodo.get(3));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int  resultSetActivos = preparedStatementQueryActivo.executeUpdate();
-
-                    break;
-                case "variables":
-                    String queryVariable = "INSERT INTO  variablesContexto (VariableId,tipo, activoId) VALUES (?, ?, ?)";
-                    PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable);
-
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setString(3, nombre);
-
-                    //insert para Variables                    
-                    preparedStatementQueryVariables.setInt(1, nodoArbolId);
-                    preparedStatementQueryVariables.setString(2, mapTipoNodo.get(1));
-                    preparedStatementQueryVariables.setInt(3, Integer.parseInt(mapTipoNodo.get(2)));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int  resultSetVariables = preparedStatementQueryVariables.executeUpdate();
-
-                    break;
-                case "sentencias":
-
-                    String querySentencias = "INSERT INTO sentencias (sentenciaId,estado) VALUES (?, ?)";
-                    PreparedStatement preparedStatementQuerySentencias = connection.prepareStatement(querySentencias);
-
-
-                    //insert para tabla nodoArbol
-                    preparedStatementQuery.setInt(1, nodoArbolId);
-                    preparedStatementQuery.setString(2, tipoNodo);
-                    preparedStatementQuery.setString(3, nombre);
-
-                    // esta llegando null a sentencias
-
-                    preparedStatementQuerySentencias.setInt(1, nodoArbolId);
-                    preparedStatementQuerySentencias.setString(2, mapTipoNodo.get(1));
-
-                    resultSetQuery = preparedStatementQuery.executeUpdate();
-                    int resultSetSentencias = preparedStatementQuerySentencias.executeUpdate();
-                    break;
-                default:
-                    System.out.println("Tipo de nodo inválido: " + tipoNodo);
-            }
-    
-        }
-      
-
-        catch (SQLException e) 
-        {
-            System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
-            return false;
-        }
-
-        return true;
+         connection.commit(); // Confirmar transacción
+         return true;
+         
     }
+    catch (SQLException e) 
+    {
+        System.err.println("Error al insertar en la tabla nodoArbol: " + e.getMessage());
+        e.printStackTrace();
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.rollback(); // Revertir transacción en caso de error
+            }
+        } catch (SQLException rollbackEx) {
+            System.err.println("Error al hacer rollback: " + rollbackEx.getMessage());
+            rollbackEx.printStackTrace();
+        }
+        return false;
+    }
+}
+
 
 
 
@@ -840,82 +751,6 @@ public class Database
     
 
 
-    public boolean verificarRelacionNodo(int nodoPadre, int nodoHijo) 
-    {
-        String query = "SELECT COUNT(*) AS existeRelacion FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            
-            preparedStatement.setInt(1, nodoPadre);
-            preparedStatement.setInt(2, nodoHijo);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            
-            if (resultSet.next()) {
-                return resultSet.getInt("existeRelacion") > 0; // Retorna true si ya existe
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false; // No existe la relación
-    }
-
-
-
-    /* 
-
-    public Boolean verificarRelacionPadreHijo(Integer nodoArbolIdPadre) 
-    {
-        
-        String guardarRelacionQuery = "SELECT nodoPadre,nodoHijo FROM nodosHijos WHERE nodoPadre = ? AND nodoHijo = ?";
-        String eliminarRelacionQuery = "DELETE FROM nodosHijos WHERE nodoPadre";
-
-        try 
-        {
-            Connection connection = DriverManager.getConnection(url);
-            PreparedStatement preparedStatement = connection.prepareStatement(guardarRelacionQuery);
-            preparedStatement.setInt(1, nodoArbolIdPadre);
-
-
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) 
-            {
-                int padre = resultSet.getInt("nodoPadre");
-                int hijo = resultSet.getInt("nodoHijo");
-
-                PreparedStatement preparedStatementForDelete = connection.prepareStatement(eliminarRelacionQuery);
-                preparedStatementForDelete.setInt(1, nodoArbolIdPadre);
-                preparedStatementForDelete.setInt(2, nodoArbolIdHijo);
-
-                int resultSetDelete = preparedStatement.executeUpdate();
-
-                if (resultSetDelete > 0) 
-                {
-                    return true;
-                }
-                else
-                {
-                    System.out.println("Ha ocurrido un error interno al eliminar la relacion");
-                    return false;
-                }
-
-            } 
-            else 
-            {
-                return false;
-            }
-
-        } 
-        catch (SQLException e) 
-        {
-            // Manejo de excepciones: imprimir la traza y/o registrar el error
-            System.err.println("Error al intentar insertar relación en nodosHijos: " + e.getMessage());
-            return false;
-        }
-    }
-
-    */
 
 
     public List<String> obtenerNodosSinRelacion() 
@@ -932,7 +767,6 @@ public class Database
             {
                 String nodoNombre = resultSet.getString("nombre");
                 nodosDisponibles.add(nodoNombre);
-                System.out.println("estos son los nodos que no tienen familia " + nodoNombre);
             }
     
         } catch (SQLException e) {
@@ -943,82 +777,6 @@ public class Database
     }
 
 
-    public boolean esAncestro(int nodoPadre, int nodoHijo) 
-    {
-        String query = """
-            WITH Ancestros AS (
-                SELECT nodoPadre, nodoHijo
-                FROM nodosHijos
-                WHERE nodoHijo = ?
-                UNION ALL
-                SELECT nh.nodoPadre, a.nodoPadre
-                FROM nodosHijos nh
-                INNER JOIN Ancestros a ON nh.nodoHijo = a.nodoPadre
-            )
-            SELECT 1
-            FROM Ancestros
-            WHERE nodoPadre = ?;
-        """;
-    
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-    
-            stmt.setInt(1, nodoPadre); // Nodo desde donde comenzamos a buscar ancestros
-            stmt.setInt(2, nodoHijo); // Nodo que queremos verificar como ancestro
-            ResultSet rs = stmt.executeQuery();
-    
-            return rs.next(); // Si hay resultados, existe un ciclo
-        } catch (SQLException e) 
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-
-
-
-
-    public boolean existeComoNodoPadre(int nodoId) 
-    {
-        String query = "SELECT 1 FROM nodosHijos WHERE nodoPadre = ?";
-        
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            
-            stmt.setInt(1, nodoId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                // Si el ResultSet tiene al menos un registro, significa que existe como nodoPadre
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-                                                                    
-    public List<Integer> obtenerTodosLosNodosPadres() 
-    {                                       
-        List<Integer> nodosPadres = new ArrayList<>();
-        String query = "SELECT nodoPadre FROM nodosHijos";
-    
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement stmt = connection.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) 
-        {
-    
-            while (rs.next()) {
-                nodosPadres.add(rs.getInt("nodoPadre"));
-            }
-    
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    
-        return nodosPadres;
-    }
     
     
     

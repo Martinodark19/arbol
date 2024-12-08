@@ -100,7 +100,6 @@ public class Interfaz extends JFrame
     tree = new JTree(treeModel); // Crea el JTree utilizando treeModel
 
 
-
     // Configurar el JTree
     tree.setBackground(BACKGROUND_COLOR);
     tree.setFont(new Font("Arial", Font.PLAIN, 30));
@@ -209,7 +208,6 @@ public class Interfaz extends JFrame
             gbc.insets = new Insets(10, 10, 10, 10);
             gbc.fill = GridBagConstraints.HORIZONTAL;
 
-
             // Crear un panel secundario para añadir nodo raiz
             JPanel formularioPanel1 = new JPanel(new GridBagLayout());
             formularioPanel1.setBackground(new Color(184, 211, 173));
@@ -275,16 +273,35 @@ public class Interfaz extends JFrame
             JButton btnGuardar = new JButton("Guardar");
             btnGuardar.addActionListener(event -> {
 
+        
+
             // Obtener los valores del formularios
             String nombre = txtNombre.getText();
             String tipoNodo = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
+
+
+            Map<Integer, String> verificarExistenciaNombre = querys.obtenerNombresNodos();
+        
+            for(String nombreGuardado : verificarExistenciaNombre.values())
+            {
+                if(nombreGuardado.equals(nombre))
+                {
+                    JOptionPane.showMessageDialog(
+                        formPanel,
+                        "El nombre ingresado ya existe en nuestros registros. Por favor, intente con uno diferente.",
+                        "Error al Guardar",
+                        JOptionPane.ERROR_MESSAGE
+                    );                    
+                    return;  
+                }
+            }
+            
 
             //ahora viene la logica de insercion a la base de datoss
 
             switch (tipoNodo) 
             {
                 case "enlace":
-                    System.out.println("Opción seleccionada: Enlace.");
                     // Aquí puedes agregar un formulario para "Enlace"
                     break;
 
@@ -296,11 +313,9 @@ public class Interfaz extends JFrame
                     opcionesNodoActivosMap.put(3, activoFormSimplificadoGetter.getMonitor());
 
                     //tipo,estado,monitor
-
                     Boolean insertOpcionesNodoActivos = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoActivosMap);
                     if (insertOpcionesNodoActivos) 
                     {
-                        reloadTreePanel();
 
                         JOptionPane.showMessageDialog(
                             formPanel, // Panel o componente padre
@@ -310,9 +325,6 @@ public class Interfaz extends JFrame
                         );
                         //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
                             // Remover el formulario del formPanel
-                        formPanel.removeAll();
-                        formPanel.revalidate();
-                        formPanel.repaint();
                     }
                     else
                     {
@@ -353,7 +365,6 @@ public class Interfaz extends JFrame
                         if (insertOpcionesNodoVariables) 
                         {
                             //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
-                            reloadTreePanel();
 
                             JOptionPane.showMessageDialog(
                                 formPanel, // Panel o componente padre
@@ -362,9 +373,6 @@ public class Interfaz extends JFrame
                                 JOptionPane.INFORMATION_MESSAGE
                             );
 
-                            formPanel.removeAll();
-                            formPanel.revalidate();
-                            formPanel.repaint();
                         }
                         else
                         {
@@ -379,7 +387,6 @@ public class Interfaz extends JFrame
         
                         }    
                         System.out.println("Opción seleccionada: Variables.");
-                        //forms.VariablesContextoFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Variables"
                     }
 
                     break;
@@ -387,23 +394,17 @@ public class Interfaz extends JFrame
                 case "sentencias":
                     Map<Integer,String> opcionesNodoSentenciasMap = new HashMap<>();
                     opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
-                    //opcionesNodoSentenciasMap.put(1, variablesContextoSimplificadoGetter.getActivoId());
 
                     Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
                     if (insertOpcionesNodoSentencias) 
                     {
                         //debemos dar aviso de que el nodo se ingreso3 correctamente y realizar una accion
-                        reloadTreePanel();
                         JOptionPane.showMessageDialog(
                             formPanel, // Panel o componente padre
                             "Guardado exitosamente.",
                             "Éxito",
                             JOptionPane.INFORMATION_MESSAGE
                         ); 
-                        
-                        formPanel.removeAll();
-                        formPanel.revalidate();
-                        formPanel.repaint();
                     }
                     else
                     {
@@ -416,16 +417,18 @@ public class Interfaz extends JFrame
                             JOptionPane.ERROR_MESSAGE
                         );
                     }
-                case "S":
 
-                    //forms.SentenciasFormSimplificado(dynamicFormPanel); // Agregar el formulario de "Sentencias"
                     break;
-
                 default:
                     System.out.println("Opción no reconocida: " + selectedOption);
                     break;
             }
+
+            //debemos dar aviso de que el nodo se ingreso correctamente y realizar una accion
+            reloadTreePanel();
             // Mostrar un mensaje en consola con los datos
+            limpiarFormPanel();
+
             System.out.println("Guardando datos...");
         });
 
@@ -492,6 +495,16 @@ public class Interfaz extends JFrame
             catch (Exception e) 
             {
                 e.printStackTrace();
+
+                JOptionPane.showMessageDialog(
+                    this, // Referencia al JFrame actual
+                    "No se pudo conectar a la base de datos.\nPor favor, verifica tu conexión y vuelve a intentarlo.",
+                    "Error de Conexión",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            
+                // Opcional: Cerrar la aplicación si la conexión es crítica
+                System.exit(0);
             }
 
             // Cargar datos del árbol
@@ -578,11 +591,9 @@ public void actualizarNombreNodoRaiz()
             Integer findNodoArbolIdFromName = querys.getNodoArbolIdByName(selectedNode);
             if (selectedNode != null && selectedNode.getUserObject() != null) 
             {
-                System.out.println("este es el id " + findNodoArbolIdFromName.toString());
                 String tipoNodo = querys.findTypeOfNodo(findNodoArbolIdFromName.toString());
                 Integer nodoArbolId = findNodoArbolIdFromName;
 
-                System.out.println("y este es el nodo arbolID " + nodoArbolId  );
                 
                 List<String> dataFromNodo = querys.getDataForNodoArbol(nodoArbolId);
                 
@@ -691,23 +702,33 @@ public void actualizarNombreNodoRaiz()
         formPanel.repaint();
     }
     
-    
-
     private void construirHijos(String idNodoPadre, DefaultMutableTreeNode nodoPadre, Map<Integer, DefaultMutableTreeNode> mapaNodos) {
         List<String> hijos = querys.findNodesChildren(idNodoPadre);
-
-        for (String hijoId : hijos) 
-        {
-            if (!mapaNodos.containsKey(Integer.parseInt(hijoId))) 
-            {
-                DefaultMutableTreeNode nodoHijo = new DefaultMutableTreeNode(querys.getNameFromNodoArbol(Integer.parseInt(hijoId)));
-                nodoPadre.add(nodoHijo);
-                mapaNodos.put(Integer.parseInt(hijoId), nodoHijo);
-
-                construirHijos(hijoId, nodoHijo, mapaNodos);
+        //System.out.println("Buscando hijos de nodo padre ID: " + idNodoPadre + " - Hijos encontrados: " + hijos);
+    
+        for (String hijoId : hijos) {
+            try {
+                int hijoIdInt = Integer.parseInt(hijoId);
+                String nombreHijo = querys.getNameFromNodoArbol(hijoIdInt);
+    
+                if (!mapaNodos.containsKey(hijoIdInt)) {
+                    DefaultMutableTreeNode nodoHijo = new DefaultMutableTreeNode(nombreHijo);
+                    nodoPadre.add(nodoHijo);
+                    mapaNodos.put(hijoIdInt, nodoHijo);
+    
+                    // Llamada recursiva para agregar los hijos del hijo actual
+                    construirHijos(hijoId, nodoHijo, mapaNodos);
+                } 
+                else 
+                {
+                    System.out.println("Nodo hijo ID: " + hijoIdInt + " ya existe en el mapa. No se agrega nuevamente.");
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error al parsear el ID del hijo: " + hijoId + " - " + e.getMessage());
             }
         }
     }
+    
 
     List<String> resultados;
 
@@ -749,7 +770,6 @@ public void actualizarNombreNodoRaiz()
         }
 
         // Refrescar el dynamicFormPanel
-        System.out.println("deberia pasar por aqui");
         dynamicFormPanel.revalidate();
         dynamicFormPanel.repaint();
 
@@ -764,14 +784,11 @@ public void actualizarNombreNodoRaiz()
         String nombreNodo = userObject.toString(); // Suponiendo que sea un String
     
         // Recorre los hijos
-        for (int i = 0; i < node.getChildCount(); i++) {
+        for (int i = 0; i < node.getChildCount(); i++) 
+        {
             DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
             Object childUserObject = childNode.getUserObject();
             String nombreHijo = childUserObject.toString();
-    
-            // Aquí tienes la relación padre-hijo
-            System.out.println("Padre: " + nombreNodo + " -> Hijo: " + nombreHijo);
-    
             // Llamada recursiva para procesar los subárboles
             obtenerRelacionesDesdeArbol(childNode);
         }
@@ -816,37 +833,33 @@ public void actualizarNombreNodoRaiz()
 
     public List<String> obtenerNodosConHijos(DefaultMutableTreeNode nodo) 
     {
-    List<String> nodosConFamilia = new ArrayList<>();
+        List<String> nodosConFamilia = new ArrayList<>();
 
-    // Utilizaremos una cola para hacer una búsqueda en anchura (BFS)
-    Queue<DefaultMutableTreeNode> cola = new LinkedList<>();
-    cola.add(nodo);
+        // Utilizaremos una cola para hacer una búsqueda en anchura (BFS)
+        Queue<DefaultMutableTreeNode> cola = new LinkedList<>();
+        cola.add(nodo);
 
-    while (!cola.isEmpty()) 
-    {
-        DefaultMutableTreeNode nodoActual = cola.poll();
+        while (!cola.isEmpty()) 
+        {
+            DefaultMutableTreeNode nodoActual = cola.poll();
 
-        // Verificar si tiene hijos
-        int cantidadHijos = nodoActual.getChildCount();
-        if (cantidadHijos > 0) {
-            // Este nodo tiene hijos, por lo tanto es un "padre con familia"
-            Object userObject = nodoActual.getUserObject();
-            String nombreNodo = userObject.toString();
-            nodosConFamilia.add(nombreNodo);
+            // Verificar si tiene hijos
+            int cantidadHijos = nodoActual.getChildCount();
+            if (cantidadHijos > 0) {
+                // Este nodo tiene hijos, por lo tanto es un "padre con familia"
+                Object userObject = nodoActual.getUserObject();
+                String nombreNodo = userObject.toString();
+                nodosConFamilia.add(nombreNodo);
 
-            // Agregar todos sus hijos a la cola para seguir explorando
-            for (int i = 0; i < cantidadHijos; i++) {
-                DefaultMutableTreeNode hijo = (DefaultMutableTreeNode) nodoActual.getChildAt(i);
-                cola.add(hijo);
-            }
-        } else {
-            // Aunque no tenga hijos, seguimos agregando su "nada" a la cola 
-            // no es necesario ya que un nodo sin hijos no sigue descendiendo
-            // En este caso no agregamos nada más.
+                // Agregar todos sus hijos a la cola para seguir explorando
+                for (int i = 0; i < cantidadHijos; i++) {
+                    DefaultMutableTreeNode hijo = (DefaultMutableTreeNode) nodoActual.getChildAt(i);
+                    cola.add(hijo);
+                }
+            } 
         }
-    }
 
-    return nodosConFamilia;
+        return nodosConFamilia;
 }
 
     
@@ -877,14 +890,15 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.contains("ora_db")) 
+                if (lineaNormalizada.equals("*xqos_admin"))
                 {
+                    System.out.println(lineaNormalizada);
                     configurationGetter.setPermisosUsuario(true);
                     System.out.println("Estás en el grupo XQOS_Admin.");
                     esAdmin = true;
                     break; // Salir del bucle
                 } 
-                else if (lineaNormalizada.contains("xqos_readonly")) 
+                else if (lineaNormalizada.equals("*xqos_readonly")) 
                 {
                     configurationGetter.setPermisosUsuario(false);
                     System.out.println("Estás en el grupo XQOS_Readonly.");

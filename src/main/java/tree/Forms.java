@@ -834,150 +834,52 @@ public void configuracionNodoRaiz(JPanel panel)
 }
 
 
-private String nodoPadreEliminar;
-private List<String> nodosHijosDisponibles = new ArrayList<>();
-private JComboBox<String> hijos = new JComboBox<>();
-
-//nodoArbolId a eliminar
-private Integer nodoArbolIdPadre;
-private Integer nodoArbolIdHijo;
-JButton btnGuardar = new JButton("Guardar");
+//private String nodoPadreEliminar;
+//private List<String> nodosHijosDisponibles = new ArrayList<>();
+//private JComboBox<String> hijos = new JComboBox<>();
+//
+////nodoArbolId a eliminar
+//private Integer nodoArbolIdPadre;
+//private Integer nodoArbolIdHijo;
+//JButton btnGuardar = new JButton("Guardar");
 
 
 public void crearRelacionesNodoForm(JPanel panel) 
 {
-    // Reiniciar el panel
+    // 1. Definir variables locales y encapsular las que se modificarán en lambdas
+    final String[] nodoPadreEliminar = {null};
+    final List<String> nodosHijosDisponibles = new ArrayList<>();
+    final JComboBox<String> hijosComboBox = new JComboBox<>();
+    
+    final Integer[] nodoArbolIdPadre = {null};
+    final Integer[] nodoArbolIdHijo = {null};
+    
+    final JButton btnGuardarLocal = new JButton("Guardar");
+    
+    // 2. Reiniciar el panel
     resetPanel();
 
-    // Configurar el diseño del panel
+    // 3. Configurar el diseño del panel
     panel.setLayout(new BorderLayout());
-    //panel.setBorder(BorderFactory.createTitledBorder("Configuración Nodo Raíz"));
     panel.setBackground(new Color(184, 211, 173));
 
-    // Crear el panel del formulario
+    // 4. Crear el panel del formulario
     JPanel formularioPanel = new JPanel(new GridBagLayout());
     formularioPanel.setBackground(new Color(184, 211, 173));
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(10, 10, 10, 10);
     gbc.fill = GridBagConstraints.HORIZONTAL;
 
-    JLabel nodosPadre = new JLabel("Seleccione el nodo padre:");
-    JComboBox<String> nodos = new JComboBox<>();
+    // 5. Componentes del formulario
+    JLabel nodosPadreLabel = new JLabel("Seleccione el nodo padre:");
+    JComboBox<String> nodosComboBox = new JComboBox<>();
 
+    // 6. Obtener los nombres de nodos desde la base de datos
     Map<Integer, String> obtenerNodos = querys.obtenerNombresNodos();
-    nodos.addItem("Seleccione una opción..."); // Ítem vacío
+    nodosComboBox.addItem("Seleccione una opción..."); // Ítem vacío
 
-    //Si no se ha seleccionado una opcion disponible deshabilitamos el JComboBox hijos y el boton guardar
-        hijos.setEnabled(false);
-        btnGuardar.setEnabled(false);
-
-    if (!obtenerNodos.isEmpty()) 
-    {
-        for (String nombre : obtenerNodos.values()) 
-        {
-            nodos.addItem(nombre);
-        }
-        //opcion por defecto
-        nodos.setSelectedIndex(0);
-
-        nodoPadreEliminar = (String) nodos.getSelectedItem();
-
-    // Registrar ActionListeners para detectar cambios en los JComboBox
-    nodos.addActionListener(e -> {
-        if (!nodoPadreEliminar.equals(nodos.getSelectedItem())) 
-        {
-            if (nodos.getSelectedItem().equals("Seleccione una opción...")) {
-                hijos.setEnabled(false);
-                btnGuardar.setEnabled(false);
-            }
-            else
-            {
-                btnGuardar.setEnabled(true);
-                hijos.setEnabled(true);
-            }
-                nodoPadreEliminar = (String) nodos.getSelectedItem();
-
-                hijos.removeAllItems();
-                nodosHijosDisponibles.clear();
-
-             //ojo aqui implementaremos la logica para que solo aparezcan los nodos que no tienen familia
-             List<String> nodosSinfamilia = querys.obtenerNodosSinRelacion();
-             if (!nodosSinfamilia.isEmpty()) 
-             {
-                
-                System.out.println("existen nodos disponibles sin familia");
-                 for (int i = 0; i < nodosSinfamilia.size(); i++) 
-                 {
-                    System.out.println("estos son " + nodosSinfamilia.get(i));
-                     nodosHijosDisponibles.add(nodosSinfamilia.get(i));
-                 }
-             }
-             else
-             {
-                 System.out.println("esta vacio y ojo el nodosSiNfAMILIA");
-                 hijos.addItem("No existen nodos disponibles");
-
-                 // Establecer una opción predeterminada
-                 hijos.setSelectedItem("No existen nodos disponibles");
-                 hijos.setEnabled(false);
-                 btnGuardar.setEnabled(false);
-             }
-
-                System.out.println("este NODO PADRE ELIMINARSE " );
-                nodosHijosDisponibles.remove(nodoPadreEliminar);
-
-                DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) interfazPrincipal.treeModel.getRoot();
-                // Llamar al método para buscar el nodo por nombre
-
-                DefaultMutableTreeNode nodoEncontrado = interfazPrincipal.buscarNodoPorNombre(rootNode, (String) nodos.getSelectedItem());
-                List<String> buscarHijosNodos = interfazPrincipal.obtenerNodosConHijos(rootNode);
-
-                if (!buscarHijosNodos.isEmpty()) 
-                {
-                    for(String buscarHijo : buscarHijosNodos)
-                    {
-                        nodosHijosDisponibles.remove(buscarHijo);
-
-                    }
-                }
-
-                //validacion para verificar que los nodos no tengan ancestros
-                if (nodoEncontrado != null) 
-                {
-                    // Ahora que tienes el nodo, obtén sus ancestros
-                    List<String> ancestros = interfazPrincipal.obtenerAncestrosDesdeNodo(nodoEncontrado);
-                    // Haz lo que necesites con la lista de ancestros
-                    for (String ancestro : ancestros) 
-                    {
-                        System.out.println("Ancestro: " + ancestro);
-                        nodosHijosDisponibles.remove(ancestro);
-                    }
-                } 
-                else 
-                {
-                    System.out.println("No se encontró un nodo con el nombre: x");
-                }
-
-                for (int i = 0; i < nodosHijosDisponibles.size(); i++) 
-                {
-                    System.out.println("estos son los que se mostraran en el ckecbox nodosHijos " + nodosHijosDisponibles.get(i));
-                    hijos.addItem(nodosHijosDisponibles.get(i));
-                }
-                
-                if (nodosHijosDisponibles.isEmpty()) 
-                {
-                    hijos.addItem("No existen nodos disponibles");
-
-                    // Establecer una opción predeterminada
-                    hijos.setSelectedItem("No existen nodos disponibles");
-                    hijos.setEnabled(false);
-                    btnGuardar.setEnabled(false);
-                }
-                
-        }
-            });
-    }
-    else
+    // 7. Verificar si hay nodos disponibles
+    if (obtenerNodos.isEmpty()) 
     {
         JOptionPane.showMessageDialog(
             panel,
@@ -986,119 +888,209 @@ public void crearRelacionesNodoForm(JPanel panel)
             JOptionPane.ERROR_MESSAGE
         );
     }
-
-    //logica para mostrar los nodos hijos disponibles
-    JLabel nodoHijo = new JLabel("Seleccione el nodo hijo:");
-    //JComboBox<String> hijos = new JComboBox<>();
-
-
-    JLabel opcionTF = new JLabel("Seleccione opcionTF:");
-    JComboBox<String> opcionTFJComboBox = new JComboBox<>(new String[]{"T","F"});
-    opcionTFJComboBox.setSelectedItem(null); // No selecciona ningún elemento por defecto
-
-                                                    
-    // Crear el botón Guardar
-    //btnGuardar = new JButton("Guardar");
-    btnGuardar.addActionListener(e -> {
-        
-        // esta logica sera la responsable de obtener el nodoArbolId del map obtenerNodos
-        for (Map.Entry<Integer, String> idNodoArbol : obtenerNodos.entrySet()) 
+    else
+    {
+        // 8. Llenar el JComboBox de nodos padre
+        for (String nombre : obtenerNodos.values()) 
         {
-            if (idNodoArbol.getValue().equals(nodos.getSelectedItem())) 
-            {
-                System.out.println("Llave encontrada Padre : " + idNodoArbol.getKey());
-                nodoArbolIdPadre = idNodoArbol.getKey();
-            }
-
-            if (idNodoArbol.getValue().equals(hijos.getSelectedItem())) 
-            {
-                System.out.println("Llave encontrada Hijo : " + idNodoArbol.getKey());
-                nodoArbolIdHijo = idNodoArbol.getKey();
-            }
+            nodosComboBox.addItem(nombre);
         }
+        // Opción por defecto
+        nodosComboBox.setSelectedIndex(0);
 
-            System.out.println("estos son los id de nodo padre y hijo " + nodoArbolIdPadre + " " + nodoArbolIdHijo);
+        nodoPadreEliminar[0] = nodosComboBox.getSelectedItem().toString();
 
-            //verificar si existe un solo nodo para bloquear el ckeckbox de hijos
-            int cantidadElementosHijos = hijos.getItemCount();
+        // 9. Deshabilitar inicialmente el JComboBox hijos y el botón guardar
+        hijosComboBox.setEnabled(false);
+        btnGuardarLocal.setEnabled(false);
 
-            if (cantidadElementosHijos == 1)  
+        // 10. Registrar ActionListener para el JComboBox de nodos padre
+        nodosComboBox.addActionListener(e -> {
+            String seleccionadoPadre = (String) nodosComboBox.getSelectedItem();
+
+            if (seleccionadoPadre == null || seleccionadoPadre.equals("Seleccione una opción...")) 
             {
-                hijos.addItem("No existen nodos disponibles");
-
-                // Establecer una opción predeterminada
-                hijos.setSelectedItem("No existen nodos disponibles");
-                hijos.setEnabled(false);
-                btnGuardar.setEnabled(false);
-            }
-
-        //enviar a la base de datos
-            Boolean enviarRelacionNodoArbol = querys.InsertRelacionesNodos(nodoArbolIdPadre, nodoArbolIdHijo, (String) opcionTFJComboBox.getSelectedItem());
-            
-            System.out.println("esto retorno ten ojo " + enviarRelacionNodoArbol);
-            if (enviarRelacionNodoArbol) 
-            {
-                JOptionPane.showMessageDialog(
-                    panel,
-                    "Nodo Relacionado Con Éxito.",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-
-                // Reiniciar el panel
-                interfazPrincipal.reloadTreePanel();
-                interfazPrincipal.limpiarFormPanel();
+                hijosComboBox.setEnabled(false);
+                btnGuardarLocal.setEnabled(false);
+                hijosComboBox.removeAllItems();
+                hijosComboBox.addItem("Seleccione una opción...");
+                nodoPadreEliminar[0] = null; // Resetear
+                return;
             }
             else
             {
-                JOptionPane.showMessageDialog(
-                    panel,
-                    "No se puede asignar un nuevo padre al nodo seleccionado ",
-                    "Error", // Título de la ventana
-                    JOptionPane.ERROR_MESSAGE  // Tipo de mensaje
-                );
+                hijosComboBox.setEnabled(true);
+                btnGuardarLocal.setEnabled(true);
             }
-        
-         
+
+            nodoPadreEliminar[0] = seleccionadoPadre;
+
+            hijosComboBox.removeAllItems();
+            nodosHijosDisponibles.clear();
+
+            // Obtener nodos sin familia
+            List<String> nodosSinfamilia = querys.obtenerNodosSinRelacion();
+            if (!nodosSinfamilia.isEmpty()) 
+            {
+                for (String nodo : nodosSinfamilia) 
+                {
+                    nodosHijosDisponibles.add(nodo);
+                }
+            }
+            else
+            {
+                hijosComboBox.addItem("No existen nodos disponibles");
+                hijosComboBox.setSelectedItem("No existen nodos disponibles");
+                hijosComboBox.setEnabled(false);
+                btnGuardarLocal.setEnabled(false);
+                return;
+            }
+
+            nodosHijosDisponibles.remove(nodoPadreEliminar[0]);
+
+            // Obtener el nodo seleccionado en el árbol
+            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) interfazPrincipal.treeModel.getRoot();
+            DefaultMutableTreeNode nodoEncontrado = interfazPrincipal.buscarNodoPorNombre(rootNode, seleccionadoPadre);
+            List<String> buscarHijosNodos = interfazPrincipal.obtenerNodosConHijos(rootNode);
+
+            if (!buscarHijosNodos.isEmpty()) 
+            {
+                for(String buscarHijo : buscarHijosNodos)
+                {
+                    nodosHijosDisponibles.remove(buscarHijo);
+                }
+            }
+
+            // Validación para evitar ciclos
+            if (nodoEncontrado != null) 
+            {
+                List<String> ancestros = interfazPrincipal.obtenerAncestrosDesdeNodo(nodoEncontrado);
+                for (String ancestro : ancestros) 
+                {
+                    nodosHijosDisponibles.remove(ancestro);
+                }
+            } 
+            else 
+            {
+                System.out.println("No se encontró un nodo con el nombre: " + seleccionadoPadre);
+            }
+
+            // Añadir nodos hijos disponibles al JComboBox
+            for (String hijo : nodosHijosDisponibles) 
+            {
+                hijosComboBox.addItem(hijo);
+            }
+
+            // Si no hay nodos disponibles después de las eliminaciones
+            if (nodosHijosDisponibles.isEmpty()) 
+            {
+                hijosComboBox.addItem("No existen nodos disponibles");
+                hijosComboBox.setSelectedItem("No existen nodos disponibles");
+                hijosComboBox.setEnabled(false);
+                btnGuardarLocal.setEnabled(false);
+            }
+        });
+    }
+
+    // 11. Lógica para mostrar los nodos hijos disponibles
+    JLabel nodoHijoLabel = new JLabel("Seleccione el nodo hijo:");
+    // JComboBox<String> hijosComboBox = new JComboBox<>(); // Ya definido arriba
+
+    JLabel opcionTFLabel = new JLabel("Seleccione opcionTF:");
+    JComboBox<String> opcionTFComboBox = new JComboBox<>(new String[]{"T","F"});
+    opcionTFComboBox.setSelectedItem(null); // No selecciona ningún elemento por defecto
+
+    // 12. Registrar ActionListener para el botón Guardar
+    btnGuardarLocal.addActionListener(e -> {
 
         
+        // Obtener el nodoArbolId del map obtenerNodos
+        for (Map.Entry<Integer, String> idNodoArbol : obtenerNodos.entrySet()) 
+        {
+            if (idNodoArbol.getValue().equals(nodosComboBox.getSelectedItem())) 
+            {
+                nodoArbolIdPadre[0] = idNodoArbol.getKey();
+            }
+
+            if (idNodoArbol.getValue().equals(hijosComboBox.getSelectedItem())) 
+            {
+                nodoArbolIdHijo[0] = idNodoArbol.getKey();
+            }
+        }
+
+        // Verificar si existe un solo nodo para bloquear el JComboBox hijos
+        int cantidadElementosHijos = hijosComboBox.getItemCount();
+
+        if (cantidadElementosHijos == 1)  
+        {
+            hijosComboBox.addItem("No existen nodos disponibles");
+            hijosComboBox.setSelectedItem("No existen nodos disponibles");
+            hijosComboBox.setEnabled(false);
+            btnGuardarLocal.setEnabled(false);
+        }
+
+        // Enviar a la base de datos
+        String opcionTFSeleccionada = (String) opcionTFComboBox.getSelectedItem();
+        Boolean enviarRelacionNodoArbol = querys.InsertRelacionesNodos(nodoArbolIdPadre[0], nodoArbolIdHijo[0], opcionTFSeleccionada);
+        
+        if (enviarRelacionNodoArbol) 
+        {
+            JOptionPane.showMessageDialog(
+                panel,
+                "Nodo Relacionado Con Éxito.",
+                "Éxito",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // Reiniciar el panel y actualizar el árbol
+            interfazPrincipal.reloadTreePanel();
+            interfazPrincipal.limpiarFormPanel();
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(
+                panel,
+                "No se puede asignar un nuevo padre al nodo seleccionado.",
+                "Error", // Título de la ventana
+                JOptionPane.ERROR_MESSAGE  // Tipo de mensaje
+            );
+        }
     });
-    // Añadir componentes al formulario
 
-
+    // 13. Añadir componentes al formulario
     gbc.gridx = 0;
     gbc.gridy = 0;
-    formularioPanel.add(nodosPadre, gbc);
+    formularioPanel.add(nodosPadreLabel, gbc);
     gbc.gridx = 1;
-    formularioPanel.add(nodos, gbc);
+    formularioPanel.add(nodosComboBox, gbc);
 
     gbc.gridx = 0;
     gbc.gridy = 1;
-    formularioPanel.add(nodoHijo, gbc);
+    formularioPanel.add(nodoHijoLabel, gbc);
     gbc.gridx = 1;
-    formularioPanel.add(hijos, gbc);
+    formularioPanel.add(hijosComboBox, gbc);
 
     // Fila 2: opcionTF y opcionTFJComboBox
     gbc.gridx = 0;
     gbc.gridy = 2;
-    formularioPanel.add(opcionTF, gbc);
+    formularioPanel.add(opcionTFLabel, gbc);
 
     gbc.gridx = 1; // Cambiar a 1 para mantener la consistencia
-    formularioPanel.add(opcionTFJComboBox, gbc);
+    formularioPanel.add(opcionTFComboBox, gbc);
 
     gbc.gridx = 0;
     gbc.gridy = 3;
-    gbc.gridwidth = 3;
+    gbc.gridwidth = 2;
     gbc.anchor = GridBagConstraints.CENTER;
-    formularioPanel.add(btnGuardar, gbc);
+    formularioPanel.add(btnGuardarLocal, gbc);
 
-    // Añadir el formulario al panel principal
+    // 14. Añadir el formulario al panel principal
     panel.add(formularioPanel, BorderLayout.CENTER);
 
-    // Refrescar el panel
+    // 15. Refrescar el panel
     panel.revalidate();
     panel.repaint();
-
 }
+
 
 }
