@@ -176,6 +176,8 @@ public class Interfaz extends JFrame
         }
     });
 
+    actualizarNombreNodoRaiz();
+
     // Crear el botón "Añadir Nodo"
     JButton btnNuevoNodo = new JButton("Añadir Nodo");
     btnNuevoNodo.setVisible(false);
@@ -273,7 +275,6 @@ public class Interfaz extends JFrame
             JButton btnGuardar = new JButton("Guardar");
             btnGuardar.addActionListener(event -> {
 
-        
 
             // Obtener los valores del formularios
             String nombre = txtNombre.getText();
@@ -394,6 +395,9 @@ public class Interfaz extends JFrame
                 case "sentencias":
                     Map<Integer,String> opcionesNodoSentenciasMap = new HashMap<>();
                     opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
+                    opcionesNodoSentenciasMap.put(2, sentenciasFormSimplificadoGetter.getQuery());
+
+                    System.out.println("Ahora se guardo bien el query y es : " + sentenciasFormSimplificadoGetter.getQuery());
 
                     Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
                     if (insertOpcionesNodoSentencias) 
@@ -517,11 +521,11 @@ public class Interfaz extends JFrame
 
 public void actualizarNombreNodoRaiz() 
 {
-    String nuevoNombre = configurationGetter.getNodoNombreRaiz();
-    if (nuevoNombre == null || nuevoNombre.isEmpty()) 
-    {
-        nuevoNombre = "Raíz"; // Valor predeterminado si el nombre es nulo o vacío
-    }
+    String nuevoNombre = querys.obtenerNombreRaiz();
+    //if (nuevoNombre == null || nuevoNombre.isEmpty()) 
+    //{
+    //    nuevoNombre = "Raíz"; // Valor predeterminado si el nombre es nulo o vacío
+    //}
     root.setUserObject(nuevoNombre);
     treeModel.nodeChanged(root);
     tree.repaint();
@@ -563,7 +567,6 @@ public void actualizarNombreNodoRaiz()
 
             // Refrescar el formPanel
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-
                 // Verificar si el nodo seleccionado es el nodo raíz
 
                 if (selectedNode == null) 
@@ -594,8 +597,8 @@ public void actualizarNombreNodoRaiz()
                 String tipoNodo = querys.findTypeOfNodo(findNodoArbolIdFromName.toString());
                 Integer nodoArbolId = findNodoArbolIdFromName;
 
-                
                 List<String> dataFromNodo = querys.getDataForNodoArbol(nodoArbolId);
+                
                 
                 // Limpiar el panel derecho antes de agregar un nuevo formulario
                 formPanel.removeAll();
@@ -629,7 +632,6 @@ public void actualizarNombreNodoRaiz()
                             "Advertencia",
                             JOptionPane.INFORMATION_MESSAGE
                         );
-
                         return;
 
                     }
@@ -890,7 +892,7 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.equals("*xqos_admin"))
+                if (lineaNormalizada.equals("*xqos_readonly"))
                 {
                     System.out.println(lineaNormalizada);
                     configurationGetter.setPermisosUsuario(true);
@@ -942,17 +944,15 @@ public void actualizarNombreNodoRaiz()
 
 
 
-    
-
-    
-
-
-
     public static void main(String[] args) 
     {
         SwingUtilities.invokeLater(() -> {
             Interfaz treeExample = new Interfaz();
             treeExample.setVisible(true);
+
+            
+           Database db = new Database();
+           db.actualizarNombreNodoRaiz(null); // Esto intentará insertar "Raiz" si la tabla está vacía
             
 
         });

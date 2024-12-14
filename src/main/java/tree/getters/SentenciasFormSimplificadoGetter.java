@@ -4,6 +4,7 @@ public class SentenciasFormSimplificadoGetter
 {
     private String estado;
     private boolean disponibilidadForm;
+    private String query;
 
     // Getter para estado
     public String getEstado() {
@@ -29,5 +30,15 @@ public class SentenciasFormSimplificadoGetter
     public void updateEstado(String nuevoEstado) {
         this.estado = nuevoEstado;
         System.out.println("Estado actualizado: " + this.estado);
+    }
+
+    public String getQuery()
+    {
+        return query;
+    }
+
+    public void setQuery(String nuevaQuery)
+    {
+        this.query = nuevaQuery;
     }
 }
