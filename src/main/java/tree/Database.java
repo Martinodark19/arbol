@@ -445,9 +445,7 @@ public class Database
         } catch (SQLException e) {
             System.err.println("Ocurrió un error al actualizar los detalles del activo con ID " + activoId + ": " + e.getMessage());
             e.printStackTrace();
-            // En caso de excepción, se asegura intentar rollback (si es posible)
-            // Si llegamos aquí, la conexión ya está cerrada por try-with-resources,
-            // pero si se desea mayor control, se podría usar un try-catch-finally para el rollback.
+
             return false;
         }
     }
@@ -938,7 +936,6 @@ public class Database
                 {
                     tipoNodoActual = rsVerificar.getString("tipoNodo").toLowerCase();
                 }
-                System.out.println("el tipo nodo actual es " + tipoNodoActual);
                 rsVerificar.close();
                 pstmtVerificar.close();
 
@@ -950,7 +947,6 @@ public class Database
                     {
                         case "activos":
                             deleteQuery = eliminarActivoId;
-                            System.out.println("paso por activos");
                             break;
                         case "variables":
                             deleteQuery = eliminarVariableId;
@@ -968,7 +964,6 @@ public class Database
                         pstmtEliminarSpecific = connection.prepareStatement(deleteQuery);
                         pstmtEliminarSpecific.setInt(1, nodo);
                         int filasEliminadas = pstmtEliminarSpecific.executeUpdate();
-                        System.out.println("estas son las filas eliminadas " + filasEliminadas);
                         if (filasEliminadas == 0) 
                         {
                             System.err.println("No se eliminó ningún registro en la tabla específica para nodoArbolId = " + nodo);
@@ -995,7 +990,6 @@ public class Database
 
             // 7. Confirmar la transacción
             connection.commit();
-            System.out.println("NodoArbolID " + nodoArbolID + " y su rama han sido eliminados correctamente.");
             return true; // Eliminación exitosa
 
         } 
@@ -1044,8 +1038,6 @@ public class Database
     
     public boolean actualizarNombreNodoRaiz(String nuevoNombre) 
     {
-        System.out.println("Llegó el nombre: " + nuevoNombre);
-
         // Sentencias SQL
         String sqlCount = "SELECT COUNT(*) AS total FROM nodoNombreRaiz;";
         String sqlInsert = "INSERT INTO nodoNombreRaiz(nombre) VALUES (?);";
@@ -1072,7 +1064,6 @@ public class Database
                             {
                                 pstmtInsert.setString(1, "Raiz");
                                 int filasInsertadas = pstmtInsert.executeUpdate();
-                                System.out.println("Número de filas insertadas: " + filasInsertadas);
                                 return filasInsertadas > 0;
                             }
                         } 
@@ -1092,7 +1083,6 @@ public class Database
                 {
                     pstmtActualizar.setString(1, nuevoNombre);
                     int filasActualizadas = pstmtActualizar.executeUpdate();
-                    System.out.println("Número de filas actualizadas: " + filasActualizadas);
                     return filasActualizadas > 0;
                 }
                 

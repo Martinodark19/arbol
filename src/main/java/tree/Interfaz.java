@@ -397,7 +397,6 @@ public class Interfaz extends JFrame
                     opcionesNodoSentenciasMap.put(1, sentenciasFormSimplificadoGetter.getEstado());
                     opcionesNodoSentenciasMap.put(2, sentenciasFormSimplificadoGetter.getQuery());
 
-                    System.out.println("Ahora se guardo bien el query y es : " + sentenciasFormSimplificadoGetter.getQuery());
 
                     Boolean insertOpcionesNodoSentencias = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoSentenciasMap);
                     if (insertOpcionesNodoSentencias) 
@@ -705,9 +704,7 @@ public void actualizarNombreNodoRaiz()
     }
     
     private void construirHijos(String idNodoPadre, DefaultMutableTreeNode nodoPadre, Map<Integer, DefaultMutableTreeNode> mapaNodos) {
-        List<String> hijos = querys.findNodesChildren(idNodoPadre);
-        //System.out.println("Buscando hijos de nodo padre ID: " + idNodoPadre + " - Hijos encontrados: " + hijos);
-    
+        List<String> hijos = querys.findNodesChildren(idNodoPadre);    
         for (String hijoId : hijos) {
             try {
                 int hijoIdInt = Integer.parseInt(hijoId);
@@ -892,7 +889,7 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.equals("*xqos_readonly"))
+                if (lineaNormalizada.equals("*xqos_admin"))
                 {
                     System.out.println(lineaNormalizada);
                     configurationGetter.setPermisosUsuario(true);

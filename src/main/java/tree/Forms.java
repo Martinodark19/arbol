@@ -228,7 +228,6 @@ public class Forms
 
                     if (eliminarNodo) 
                     {
-                        System.out.println("Eliminado correctamente");
                         JOptionPane.showMessageDialog(
                             panel, // Panel o componente padre
                             "Nodo eliminado con exito.",
@@ -252,7 +251,6 @@ public class Forms
                     
 
                     // Si el usuario confirma, mostrar un mensaje en la consola
-                    System.out.println("Eliminado");
                     interfazPrincipal.reloadTreePanel();
                 } 
                 else 
@@ -277,6 +275,17 @@ public class Forms
         {
             btnGuardar.setVisible(false);
     
+        }
+
+
+        if (configurationGetter.getPermisosUsuario()) 
+        {
+            btnEliminar.setVisible(true);
+
+        }
+        else
+        {
+            btnEliminar.setVisible(false);
         }
 
             // Añadir componentes al formularioPanel en el orden deseado
@@ -324,17 +333,14 @@ public class Forms
 
         // Acción del botón Guardar
         btnGuardar.addActionListener(e -> {
-            System.out.println("Guardando Nodo de Activos:");
 
             // Obtener valores actuales del formulario
             String tipo = (String) comboTipo.getSelectedItem();
             String estado = (String) comboEstado.getSelectedItem();
             String monitor = (String) comboMonitor.getSelectedItem();
         
-            System.out.println("esto es el informationActivosToShow posicion 0 " + informationActivosToShow.get(0));
-            System.out.println("y el tipo es : " + tipo);
+
             // Actualizar en la base de datos
-            System.out.println("este NOMBRE SE ACTUALIZA :" + txtNombre.getText());
             boolean isUpdated = querys.updateActivoDetails(nodoArbolId, tipo, estado, monitor, txtNombre.getText());
         
             if (isUpdated) 
@@ -443,6 +449,28 @@ public class Forms
 
     JButton btnEliminar = new JButton("Eliminar Nodo");
     btnEliminar.setBackground(Color.decode("#e84a28"));
+
+
+            //logica para mostrar el boton guardar dependiendo de los permisos del usuario
+            if (configurationGetter.getPermisosUsuario()) 
+            {
+                btnGuardar.setVisible(true);
+            }
+            else
+            {
+                btnGuardar.setVisible(false);
+        
+            }
+    
+    
+            if (configurationGetter.getPermisosUsuario()) 
+            {
+                btnEliminar.setVisible(true);
+            }
+            else
+            {
+                btnEliminar.setVisible(false);
+            }
 
     // Crear un panel para los botones con FlowLayout
     JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
@@ -637,9 +665,22 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
         btnGuardar.setVisible(false);
     }
 
+
+    
+
     // Crear el botón "Eliminar Nodo"
     JButton btnEliminar = new JButton("Eliminar Nodo");
     btnEliminar.setBackground(Color.decode("#e84a28"));
+
+
+    if (configurationGetter.getPermisosUsuario()) 
+    {
+        btnEliminar.setVisible(true);
+    }
+    else
+    {
+        btnEliminar.setVisible(false);
+    }
 
 
     // Crear un panel para los botones con FlowLayout
@@ -750,7 +791,6 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
 
                 if (eliminarNodo) 
                 {
-                    System.out.println("Eliminado correctamente");
                     JOptionPane.showMessageDialog(
                         panel, // Panel o componente padre
                         "Nodo eliminado con éxito.",
@@ -939,7 +979,6 @@ public void activoFormSimplificado(JPanel panel)
     else 
     {
         variablesContextoSimplificadoGetter.setDisponibilidadForm(true);
-        System.out.println("Cargando nodos activos en el JComboBox...");
         // Llenar el JComboBox con los valores del Map
         for (Integer key : obtenerActivosIds.keySet()) 
         {
