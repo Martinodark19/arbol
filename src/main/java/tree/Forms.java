@@ -564,7 +564,6 @@ public class Forms
 
                 if (eliminarNodo) 
                 {
-                    System.out.println("Eliminado correctamente");
                     JOptionPane.showMessageDialog(
                         panel, // Panel o componente padre
                         "Nodo eliminado con exito.",

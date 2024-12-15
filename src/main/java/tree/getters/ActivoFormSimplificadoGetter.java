@@ -8,6 +8,7 @@ public class ActivoFormSimplificadoGetter
     private String tipo;
     private String estado;
     private String monitor;
+    private String nombre;
 
     // Setter para tipo
     public void setTipo(String tipo) {
@@ -37,5 +38,15 @@ public class ActivoFormSimplificadoGetter
     // Getter para monitor
     public String getMonitor() {
         return monitor;
+    }
+
+    public String getNombre()
+    {
+        return nombre;
+    }
+
+    public void setMonitor()
+    {
+        this.nombre = nombre;
     }
 }

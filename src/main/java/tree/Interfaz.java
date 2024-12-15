@@ -131,7 +131,6 @@ public class Interfaz extends JFrame
 
     btnCrearRelacionNodos.setVisible(false);
 
-
         // logica para mostrar boton para administrador
         if(configurationGetter.getPermisosUsuario())
         {
@@ -279,6 +278,17 @@ public class Interfaz extends JFrame
             // Obtener los valores del formularios
             String nombre = txtNombre.getText();
             String tipoNodo = ((String) comboTipoNodo.getSelectedItem()).toLowerCase();
+
+            if (nombre.isEmpty()) 
+            {
+                JOptionPane.showMessageDialog(
+                    formPanel, 
+                    "El campo 'Nombre' no puede estar vacío.", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE
+                );
+                return; // Detiene la ejecución para que no continúe el proceso de guardado
+            }    
 
 
             Map<Integer, String> verificarExistenciaNombre = querys.obtenerNombresNodos();
@@ -889,7 +899,7 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.equals("*xqos_admin"))
+                if (lineaNormalizada.equals("*xqos_readonly"))
                 {
                     System.out.println(lineaNormalizada);
                     configurationGetter.setPermisosUsuario(true);
