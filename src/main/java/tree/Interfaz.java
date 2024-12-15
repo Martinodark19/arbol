@@ -899,7 +899,7 @@ public void actualizarNombreNodoRaiz()
                 String lineaNormalizada = linea.trim().toLowerCase();
             
                 // Verificar si la línea contiene los nombres de los grupos que nos interesan
-                if (lineaNormalizada.equals("*xqos_readonly"))
+                if (lineaNormalizada.equals("*xqos_admin"))
                 {
                     System.out.println(lineaNormalizada);
                     configurationGetter.setPermisosUsuario(true);
