@@ -214,10 +214,12 @@ public class Database
                             String tipoVariable = detailResultSet.getString("tipo"); 
                             int activoId = detailResultSet.getInt("activoId");
                             String nombreVariable = detailResultSet.getString("nombre");
+                            String valorString = detailResultSet.getString("valorString");
 
                             arrayNodoInformation.add(tipoVariable);
                             arrayNodoInformation.add(activoId + "");
                             arrayNodoInformation.add(nombreVariable);
+                            arrayNodoInformation.add(valorString);
                             break;
                             
                             case "sentencias":
@@ -452,12 +454,9 @@ public class Database
 
     
 
-    
-
-
-    public boolean updateVariableDetails(int variableId, String tipo, int activoId, String nombre) 
+    public boolean updateVariableDetails(int variableId, String tipo, int activoId, String nombre, String valorString) 
     {
-        String query = "UPDATE variablescontexto SET nombre = ?, tipo = ?, activoId = ? WHERE VariableId = ?";
+        String query = "UPDATE variablescontexto SET nombre = ?, tipo = ?, activoId = ?, valorString = ? WHERE VariableId = ?";
         String queryUpdateNombreNodoArbol = "UPDATE nodoarbol SET nombre = ? WHERE nodoArbolId = ?";
     
         try 
@@ -474,7 +473,9 @@ public class Database
             preparedStatement.setString(1, nombre);
             preparedStatement.setString(2, tipo);
             preparedStatement.setInt(3, activoId);
-            preparedStatement.setInt(4, variableId);
+            preparedStatement.setString(4, valorString);
+            preparedStatement.setInt(5, variableId);
+
 
             int rowsUpdated = preparedStatement.executeUpdate();
     
@@ -531,7 +532,6 @@ public class Database
         ) 
 
         {
-
             connection.setAutoCommit(false);
 
             preparedStatement.setString(1, nombre);
@@ -677,12 +677,14 @@ public class Database
                     }
                     break;
                 case "variables":
-                    String queryVariable = "INSERT INTO variablesContexto (VariableId, nombre,  tipo, activoId) VALUES (?, ?, ?, ?)";
-                    try (PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable)) {
+                    String queryVariable = "INSERT INTO variablesContexto (VariableId, nombre,  tipo, activoId, valorString) VALUES (?, ?, ?, ?, ?)";
+                    try (PreparedStatement preparedStatementQueryVariables = connection.prepareStatement(queryVariable)) 
+                    {
                         preparedStatementQueryVariables.setInt(1, nodoArbolId);
                         preparedStatementQueryVariables.setString(2, nombre);
                         preparedStatementQueryVariables.setString(3, mapTipoNodo.get(1));
                         preparedStatementQueryVariables.setInt(4, Integer.parseInt(mapTipoNodo.get(2)));
+                        preparedStatementQueryVariables.setString(5, mapTipoNodo.get(3));
                         preparedStatementQueryVariables.executeUpdate();
                     }
                     break;
@@ -1070,7 +1072,7 @@ public class Database
                         else 
                         {
                             // La tabla no está vacía, no hacer nada
-                            System.out.println("La tabla 'nodoNombreRaiz' ya contiene datos. No se realiza ninguna acción.");
+                            System.out.println("La tabla 'nodoNombreRaiz' ya contiene datos.");
                             return false;
                         }
                     }

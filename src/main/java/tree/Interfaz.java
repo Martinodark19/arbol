@@ -371,6 +371,7 @@ public class Interfaz extends JFrame
                         Map<Integer,String> opcionesNodoVariablesMap = new HashMap<>();
                         opcionesNodoVariablesMap.put(1,variablesContextoSimplificadoGetter.getTipoVC());
                         opcionesNodoVariablesMap.put(2, variablesContextoSimplificadoGetter.getActivoId().toString());
+                        opcionesNodoVariablesMap.put(3, variablesContextoSimplificadoGetter.getValorString());
 
                         Boolean insertOpcionesNodoVariables = querys.insertarNodoArbol(tipoNodo,nombre,opcionesNodoVariablesMap);
                         if (insertOpcionesNodoVariables) 
