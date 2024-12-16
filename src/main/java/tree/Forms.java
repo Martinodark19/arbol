@@ -378,231 +378,212 @@ public class Forms
 
 
     public void VariablesContextoForm(List<String> informationVariablesToShow, Integer nodoArbolId) 
-{
-
-    resetPanel();
-    // Cambiar el diseño del panel principal
-    panel.setLayout(new BorderLayout());
-    panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
-    panel.setBackground(new Color(184, 211, 173));
-
-    // Crear un panel secundario para los campos del formulario
-    JPanel formularioPanel = new JPanel(new GridBagLayout());
-    formularioPanel.setBackground(new Color(184, 211, 173));
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(10, 10, 10, 10);
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-
-
-    JLabel lblNombre = new JLabel("Nombre:");
-    JTextField txtNombre = new JTextField(20); // El número 20 es el ancho inicial del campo
-
-    txtNombre.setText(informationVariablesToShow.get(2));
-
-
-    // Configurar los campos del formulario
-    JLabel lblTipoVC = new JLabel("Tipo:");
-    JTextField txtTipoVC = new JTextField();
-    txtTipoVC.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo de texto
-    txtTipoVC.setText(informationVariablesToShow.get(0));
-
-    txtTipoVC.addKeyListener(new KeyAdapter() 
     {
-        @Override
-        public void keyTyped(KeyEvent e) 
-        {
-            if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
-                e.consume();
-                Toolkit.getDefaultToolkit().beep();
-            }
-        }
-    });
 
-    // Crear label y combo box para 'ActivoId'
-    JLabel lblActivoId = new JLabel("ActivoId:");
-    JComboBox<Integer> comboActivoId = new JComboBox<>();
-
-    // Obtener el mapa de activos (ID y nombre)
-    Map<Integer, String> getActivos = querys.obtenerSoloActivoId();
-
-    // Obtener el conjunto de IDs de activos
-    Set<Integer> activos = getActivos.keySet();
-
-    // Agregar los IDs de activos al JComboBox
-    for (Integer activo : activos) 
-    {
-        comboActivoId.addItem(activo);
-    }
-
-    try 
-    {
-        // Establecer el valor seleccionado por defecto
-        comboActivoId.setSelectedItem(Integer.parseInt(informationVariablesToShow.get(1)));
-    } 
-    catch (NumberFormatException e) 
-    {
-        System.err.println("El valor obtenido no es un número válido: " + informationVariablesToShow.get(1));
-    }
-
-    // Crear los botones "Guardar" y "Eliminar Nodo"
-    JButton btnGuardar = new JButton("Guardar");
-
-    JButton btnEliminar = new JButton("Eliminar Nodo");
-    btnEliminar.setBackground(Color.decode("#e84a28"));
-
-
-            //logica para mostrar el boton guardar dependiendo de los permisos del usuario
-            if (configurationGetter.getPermisosUsuario()) 
-            {
-                btnGuardar.setVisible(true);
-            }
-            else
-            {
-                btnGuardar.setVisible(false);
-        
-            }
+        resetPanel();
     
+        // Cambiar el diseño del panel principal
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Formulario Variables Contexto"));
+        panel.setBackground(new Color(184, 211, 173));
     
-            if (configurationGetter.getPermisosUsuario()) 
-            {
-                btnEliminar.setVisible(true);
+        // Crear un panel secundario para los campos del formulario
+        JPanel formularioPanel = new JPanel(new GridBagLayout());
+        formularioPanel.setBackground(new Color(184, 211, 173));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+    
+        JLabel lblNombre = new JLabel("Nombre:");
+        JTextField txtNombre = new JTextField(20); // El número 20 es el ancho inicial del campo
+        txtNombre.setText(informationVariablesToShow.get(2));
+    
+        // Nuevo campo valorString (debajo de Nombre)
+        JLabel lblValorString = new JLabel("Valor String:");
+        JTextField txtValorString = new JTextField(20);
+        txtValorString.setText(informationVariablesToShow.get(3));
+        // Si se desea inicializar con algún valor de informationVariablesToShow, descomentar y ajustar el índice:
+        // txtValorString.setText(informationVariablesToShow.get(3)); // Ajustar el índice según corresponda.
+    
+        // Campo Tipo
+        JLabel lblTipoVC = new JLabel("Tipo:");
+        JTextField txtTipoVC = new JTextField();
+        txtTipoVC.setPreferredSize(new Dimension(300, 30));
+        txtTipoVC.setText(informationVariablesToShow.get(0));
+    
+        txtTipoVC.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
+                    e.consume();
+                    Toolkit.getDefaultToolkit().beep();
+                }
             }
-            else
-            {
-                btnEliminar.setVisible(false);
-            }
-
-    // Crear un panel para los botones con FlowLayout
-    JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-    botonesPanel.setBackground(new Color(184, 211, 173)); // Fondo coherente
-
-    // Añadir los botones al panel de botones
-    botonesPanel.add(btnGuardar);
-    botonesPanel.add(btnEliminar);
-
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    formularioPanel.add(lblNombre, gbc);
-
-    gbc.gridx = 1;
-    gbc.gridy = 0;
-    formularioPanel.add(txtNombre, gbc);
-
-    // Luego Tipo
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    formularioPanel.add(lblTipoVC, gbc);
-
-    gbc.gridx = 1;
-    gbc.gridy = 1;
-    formularioPanel.add(txtTipoVC, gbc);
-
-    // Luego ActivoId
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    formularioPanel.add(lblActivoId, gbc);
-
-    gbc.gridx = 1;
-    gbc.gridy = 2;
-    formularioPanel.add(comboActivoId, gbc);
-
-    // Finalmente el panel de botones
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    gbc.gridwidth = 2; 
-    gbc.anchor = GridBagConstraints.CENTER;
-    formularioPanel.add(botonesPanel, gbc);
-
-    // Acción del botón Guardar
-    btnGuardar.addActionListener(e -> {
-        System.out.println("Guardando Variables Contexto:");
-        String tipo = txtTipoVC.getText();
-        Integer activoId = (Integer) comboActivoId.getSelectedItem();
-
-        boolean isUpdated = querys.updateVariableDetails(nodoArbolId, tipo, activoId,txtNombre.getText());
-        if (isUpdated) 
-        {
-            JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
-
-            // Recargar los valores actualizados desde la base de datos
-            Map<Integer, String> updatedDetails = querys.getVariableDetails(nodoArbolId);
-            if (!updatedDetails.isEmpty()) 
-            {
-                txtTipoVC.setText(updatedDetails.get(1));
-                comboActivoId.setSelectedItem(Integer.parseInt(updatedDetails.get(2)));
-            }
-            // Refrescar el panel
-            //panel.revalidate();
-            //panel.repaint();
-            interfazPrincipal.reloadTreePanel();
-            interfazPrincipal.limpiarFormPanel();   
-        } 
-        else 
-        {
-            JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
+        });
+    
+        // Crear label y combo box para 'ActivoId'
+        JLabel lblActivoId = new JLabel("ActivoId:");
+        JComboBox<Integer> comboActivoId = new JComboBox<>();
+    
+        // Obtener el mapa de activos (ID y nombre)
+        Map<Integer, String> getActivos = querys.obtenerSoloActivoId();
+        Set<Integer> activos = getActivos.keySet();
+    
+        // Agregar los IDs de activos al JComboBox
+        for (Integer activo : activos) {
+            comboActivoId.addItem(activo);
         }
-    });
-
-    // Acción del botón Eliminar Nodo
-    btnEliminar.addActionListener(new ActionListener() 
-    {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            // Mostrar un cuadro de confirmación
-            int opcion = JOptionPane.showConfirmDialog(
-                    panel,
-                    "¿Estás seguro de que deseas eliminar el nodo?",
-                    "Confirmar Eliminación",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
-
-            // Verificar la opción seleccionada
-            if (opcion == JOptionPane.YES_OPTION) 
-            {
-                Boolean eliminarNodo = querys.eliminarNodoArbol(nodoArbolId);
-
-                if (eliminarNodo) 
-                {
-                    JOptionPane.showMessageDialog(
-                        panel, // Panel o componente padre
-                        "Nodo eliminado con exito.",
-                        "Éxito",
-                        JOptionPane.INFORMATION_MESSAGE
-                    ); 
-
-                    // Reiniciar el panel y actualizar el árbol
-                    interfazPrincipal.reloadTreePanel();
-                    interfazPrincipal.limpiarFormPanel();
+    
+        try {
+            // Establecer el valor seleccionado por defecto
+            comboActivoId.setSelectedItem(Integer.parseInt(informationVariablesToShow.get(1)));
+        } catch (NumberFormatException e) {
+            System.err.println("El valor obtenido no es un número válido: " + informationVariablesToShow.get(1));
+        }
+    
+        // Crear los botones "Guardar" y "Eliminar Nodo"
+        JButton btnGuardar = new JButton("Guardar");
+        JButton btnEliminar = new JButton("Eliminar Nodo");
+        btnEliminar.setBackground(Color.decode("#e84a28"));
+    
+        // Lógica para mostrar el botón guardar dependiendo de los permisos del usuario
+        if (configurationGetter.getPermisosUsuario()) {
+            btnGuardar.setVisible(true);
+        } else {
+            btnGuardar.setVisible(false);
+        }
+    
+        if (configurationGetter.getPermisosUsuario()) {
+            btnEliminar.setVisible(true);
+        } else {
+            btnEliminar.setVisible(false);
+        }
+    
+        // Crear un panel para los botones con FlowLayout
+        JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        botonesPanel.setBackground(new Color(184, 211, 173));
+        botonesPanel.add(btnGuardar);
+        botonesPanel.add(btnEliminar);
+    
+        // Añadir componentes al formularioPanel
+        // Fila 0: Nombre
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formularioPanel.add(lblNombre, gbc);
+    
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        formularioPanel.add(txtNombre, gbc);
+    
+        // Fila 1: Valor String
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        formularioPanel.add(lblValorString, gbc);
+    
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        formularioPanel.add(txtValorString, gbc);
+    
+        // Fila 2: Tipo
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formularioPanel.add(lblTipoVC, gbc);
+    
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        formularioPanel.add(txtTipoVC, gbc);
+    
+        // Fila 3: ActivoId
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        formularioPanel.add(lblActivoId, gbc);
+    
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        formularioPanel.add(comboActivoId, gbc);
+    
+        // Fila 4: Panel de botones
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2; 
+        gbc.anchor = GridBagConstraints.CENTER;
+        formularioPanel.add(botonesPanel, gbc);
+    
+        // Acción del botón Guardar
+        btnGuardar.addActionListener(e -> {
+            System.out.println("Guardando Variables Contexto:");
+            String tipo = txtTipoVC.getText();
+            Integer activoId = (Integer) comboActivoId.getSelectedItem();
+            String valorString = txtValorString.getText();
+    
+            boolean isUpdated = querys.updateVariableDetails(nodoArbolId, tipo, activoId, txtNombre.getText(),valorString);
+            if (isUpdated) {
+                JOptionPane.showMessageDialog(panel, "Datos actualizados correctamente.");
+    
+                // Recargar los valores actualizados desde la base de datos
+                Map<Integer, String> updatedDetails = querys.getVariableDetails(nodoArbolId);
+                if (!updatedDetails.isEmpty()) {
+                    txtTipoVC.setText(updatedDetails.get(1));
+                    comboActivoId.setSelectedItem(Integer.parseInt(updatedDetails.get(2)));
+                    // Aquí podrías actualizar txtValorString si también lo guardas en la BD
+                    // txtValorString.setText(updatedDetails.get(X)); // Ajustar índice
                 }
-                else
-                {
-                    JOptionPane.showMessageDialog(
-                        panel,
-                        "Se produjo un error al intentar eliminar el nodo",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                    );
-                }
-
-                // Recargar el panel del árbol
                 interfazPrincipal.reloadTreePanel();
-            } 
-            else 
-            {
-                // Si el usuario cancela, manejarlo aquí (opcional)
-                System.out.println("Cancelado");
+                interfazPrincipal.limpiarFormPanel();
+            } else {
+                JOptionPane.showMessageDialog(panel, "No se pudo actualizar la información. Verifica los datos.");
             }
-        }
-    });
-
-    // Agregar el formulario al centro del panel principal
-    panel.add(formularioPanel, BorderLayout.CENTER);
-
-    // Refrescar el panel
-    panel.revalidate();
-    panel.repaint();
-}
+        });
+    
+        // Acción del botón Eliminar Nodo
+        btnEliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int opcion = JOptionPane.showConfirmDialog(
+                        panel,
+                        "¿Estás seguro de que deseas eliminar el nodo?",
+                        "Confirmar Eliminación",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+    
+                if (opcion == JOptionPane.YES_OPTION) {
+                    Boolean eliminarNodo = querys.eliminarNodoArbol(nodoArbolId);
+    
+                    if (eliminarNodo) {
+                        JOptionPane.showMessageDialog(
+                            panel,
+                            "Nodo eliminado con éxito.",
+                            "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE
+                        ); 
+    
+                        interfazPrincipal.reloadTreePanel();
+                        interfazPrincipal.limpiarFormPanel();
+                    } else {
+                        JOptionPane.showMessageDialog(
+                            panel,
+                            "Se produjo un error al intentar eliminar el nodo",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+    
+                    interfazPrincipal.reloadTreePanel();
+                } else {
+                    System.out.println("Cancelado");
+                }
+            }
+        });
+    
+        // Agregar el formulario al centro del panel principal
+        panel.add(formularioPanel, BorderLayout.CENTER);
+    
+        // Refrescar el panel
+        panel.revalidate();
+        panel.repaint();
+    }
+    
 
     
 public void SentenciasForm(List<String> informationSentenciasToShow, Integer nodoArbolId) 
@@ -628,17 +609,20 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
 
     // Configurar los campos del formulario
     JLabel lblQuery = new JLabel("Query:");
-    JTextField txtQuery = new JTextField();
-    System.out.println(informationSentenciasToShow.get(1));
-    txtQuery.setText(informationSentenciasToShow.get(1));
-    txtQuery.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo de texto
+    
+    // Cambiamos el JTextField por un JTextArea
+    JTextArea txtQueryArea = new JTextArea(informationSentenciasToShow.get(1), 5, 30);
+    txtQueryArea.setLineWrap(true);
+    txtQueryArea.setWrapStyleWord(true);
+    JScrollPane scrollPaneQuery = new JScrollPane(txtQueryArea);
+    scrollPaneQuery.setPreferredSize(new Dimension(300, 100)); // Ajustar el tamaño deseado del área visible
 
-    txtQuery.addKeyListener(new KeyAdapter() 
+    txtQueryArea.addKeyListener(new KeyAdapter() 
     {
         @Override
         public void keyTyped(KeyEvent e) 
         {
-            if (txtQuery.getText().length() >= 255) { // Máximo 255 caracteres (ajusta según necesidad)
+            if (txtQueryArea.getText().length() >= 7990) { // Máximo 255 caracteres (ajusta según necesidad)
                 e.consume();
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -648,8 +632,6 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
     JLabel lblEstado = new JLabel("Estado:");
     JComboBox<String> comboEstado = new JComboBox<>(new String[]{"ACTIVA", "NO ACTIVA"});
     comboEstado.setPreferredSize(new Dimension(300, 30)); // Aumentar tamaño del campo
-
-    // Establecer el elemento seleccionado basado en el valor obtenido
     comboEstado.setSelectedItem(informationSentenciasToShow.get(0));
 
     JButton btnGuardar = new JButton("Guardar");
@@ -664,13 +646,9 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
         btnGuardar.setVisible(false);
     }
 
-
-    
-
     // Crear el botón "Eliminar Nodo"
     JButton btnEliminar = new JButton("Eliminar Nodo");
     btnEliminar.setBackground(Color.decode("#e84a28"));
-
 
     if (configurationGetter.getPermisosUsuario()) 
     {
@@ -680,7 +658,6 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
     {
         btnEliminar.setVisible(false);
     }
-
 
     // Crear un panel para los botones con FlowLayout
     JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
@@ -707,7 +684,8 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
 
     gbc.gridx = 1;
     gbc.gridy = 1;
-    formularioPanel.add(txtQuery, gbc);
+    // En lugar de txtQuery, agregamos el scrollPaneQuery
+    formularioPanel.add(scrollPaneQuery, gbc);
 
     // Luego Estado
     gbc.gridx = 0;
@@ -731,7 +709,7 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
 
         // Obtener los valores del formulario
         String estado = (String) comboEstado.getSelectedItem();
-        String query = txtQuery.getText();
+        String query = txtQueryArea.getText(); // Ahora usamos txtQueryArea en lugar de txtQuery
 
         // Validar campos obligatorios (opcional)
         if (query.trim().isEmpty()) 
@@ -739,7 +717,6 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
             JOptionPane.showMessageDialog(panel, "El campo 'Query' no puede estar vacío.", "Validación", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
 
         // Actualizar el valor en la base de datos
         boolean isUpdated = querys.updateSentenciaEstado(nodoArbolId, estado, query, txtNombre.getText());
@@ -751,15 +728,11 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
             Map<Integer, String> updatedDetails = querys.getSentenciaDetails(nodoArbolId);
             if (!updatedDetails.isEmpty()) 
             {
-                comboEstado.setSelectedItem(updatedDetails.get(1)); // Actualizar la selección
-                txtQuery.setText(updatedDetails.get(2)); // Actualizar el campo Query
+                comboEstado.setSelectedItem(updatedDetails.get(1)); 
+                txtQueryArea.setText(updatedDetails.get(2)); 
             }
 
-            // Refrescar el panel
-            //panel.revalidate();
-            //panel.repaint();
-
-            // Reiniciar el panel y actualizar el árbol
+            // Refrescar el panel y actualizar árbol
             interfazPrincipal.reloadTreePanel();
             interfazPrincipal.limpiarFormPanel();
         } 
@@ -797,7 +770,7 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
                         JOptionPane.INFORMATION_MESSAGE
                     ); 
 
-                    // Reiniciar el panel y actualizar el árbol
+                    // Actualizar el árbol
                     interfazPrincipal.reloadTreePanel();
                     interfazPrincipal.limpiarFormPanel();
                 }
@@ -811,12 +784,10 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
                     );
                 }
 
-                // Recargar el panel del árbol
                 interfazPrincipal.reloadTreePanel();
             } 
             else 
             {
-                // Si el usuario cancela, manejarlo aquí (opcional)
                 System.out.println("Eliminación cancelada.");
             }
         }
@@ -829,6 +800,7 @@ public void SentenciasForm(List<String> informationSentenciasToShow, Integer nod
     panel.revalidate();
     panel.repaint();
 }
+
 
 
 
@@ -911,7 +883,7 @@ public void activoFormSimplificado(JPanel panel)
     panel.repaint();
 }
 
-    public void VariablesContextoFormSimplificado(JPanel panel) 
+public void VariablesContextoFormSimplificado(JPanel panel) 
 {
     // Reiniciar el panel
     resetPanel();
@@ -944,8 +916,29 @@ public void activoFormSimplificado(JPanel panel)
             if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
                 e.consume();
                 Toolkit.getDefaultToolkit().beep();
-
             }
+        }
+    });
+
+    // Nuevo campo valorString (debajo de Tipo)
+    JLabel lblValorString = new JLabel("Valor String:");
+    JTextField txtValorString = new JTextField(20);
+
+    // Listener para actualizar el getter al escribir en txtValorString
+    txtValorString.getDocument().addDocumentListener(new DocumentListener() {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            variablesContextoSimplificadoGetter.setValorString(txtValorString.getText());
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            variablesContextoSimplificadoGetter.setValorString(txtValorString.getText());
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            variablesContextoSimplificadoGetter.setValorString(txtValorString.getText());
         }
     });
 
@@ -957,15 +950,14 @@ public void activoFormSimplificado(JPanel panel)
     // Verificar si el Map está vacío
     if (obtenerActivosIds.isEmpty()) 
     {
-        
         // Mostrar un cuadro de diálogo informativo
         JOptionPane.showMessageDialog(
-            panel, // Panel o componente padre
+            panel,
             "No hay nodos activos disponibles. Por favor, agregue nodos activos antes de continuar.",
             "Información",
             JOptionPane.INFORMATION_MESSAGE
         );
-    
+
         // Mostrar un mensaje predeterminado en el JComboBox
         comboActivoId.addItem(-1); // Valor simbólico
         comboActivoId.setSelectedItem(-1);
@@ -979,50 +971,57 @@ public void activoFormSimplificado(JPanel panel)
     {
         variablesContextoSimplificadoGetter.setDisponibilidadForm(true);
         // Llenar el JComboBox con los valores del Map
-        for (Integer key : obtenerActivosIds.keySet()) 
-        {
+        for (Integer key : obtenerActivosIds.keySet()) {
             comboActivoId.addItem(key);
         }
     }
 
     // Listener para actualizar el getter al cambiar la selección en comboActivoId
-// Seleccionar manualmente el valor actual para disparar el ActionListener
     comboActivoId.addActionListener(e -> {
         variablesContextoSimplificadoGetter.setActivoId((Integer) comboActivoId.getSelectedItem());
     });
 
-    // Forzar la ejecución del ActionListener al inicio
-    if (comboActivoId.getSelectedItem() != null) 
-    {
-        comboActivoId.setSelectedItem(comboActivoId.getSelectedItem()); // Simula la interacción
+    // Forzar la ejecución del ActionListener al inicio, si hay un valor seleccionado
+    if (comboActivoId.getSelectedItem() != null) {
+        comboActivoId.setSelectedItem(comboActivoId.getSelectedItem());
     }
 
-
     // Añadir componentes al formularioPanel
+    // Fila 0: Tipo
     gbc.gridx = 0;
     gbc.gridy = 0;
     formularioPanel.add(lblTipoVC, gbc);
+
     gbc.gridx = 1;
     formularioPanel.add(txtTipoVC, gbc);
 
+    // Fila 1: Valor String
     gbc.gridx = 0;
     gbc.gridy = 1;
+    formularioPanel.add(lblValorString, gbc);
+
+    gbc.gridx = 1;
+    formularioPanel.add(txtValorString, gbc);
+
+    // Fila 2: ActivoId
+    gbc.gridx = 0;
+    gbc.gridy = 2;
     formularioPanel.add(lblActivoId, gbc);
+
     gbc.gridx = 1;
     formularioPanel.add(comboActivoId, gbc);
 
     // Agregar el formulario al centro del panel principal
     panel.add(formularioPanel, BorderLayout.CENTER);
-                
 
     // Refrescar el panel
     panel.revalidate();
     panel.repaint();
 }
 
+
     
-    public void SentenciasFormSimplificado(JPanel panel) 
-{
+public void SentenciasFormSimplificado(JPanel panel) {
     // Reiniciar el panel
     resetPanel();
 
@@ -1064,28 +1063,34 @@ public void activoFormSimplificado(JPanel panel)
     gbc.weighty = 0;
     formularioPanel.add(comboEstado, gbc);
 
-    // Configurar el campo de Query como JTextField en lugar de JTextArea
+    // Configurar el campo de Query como JTextArea con scroll
     JLabel lblQuery = new JLabel("Query:");
-    JTextField txtQueryVC = new JTextField(20); // Ajustar el ancho del campo según sea necesario
-    sentenciasFormSimplificadoGetter.setQuery(txtQueryVC.getText());
+    JTextArea txtQueryArea = new JTextArea(5, 20); // 5 filas, 20 columnas como ejemplo
+    txtQueryArea.setLineWrap(true);
+    txtQueryArea.setWrapStyleWord(true);
+    sentenciasFormSimplificadoGetter.setQuery(txtQueryArea.getText());
 
     // Listener opcional para actualizar el getter al cambiar el texto
-    txtQueryVC.getDocument().addDocumentListener(new DocumentListener() {
+    txtQueryArea.getDocument().addDocumentListener(new DocumentListener() {
         @Override
         public void insertUpdate(DocumentEvent e) {
-            sentenciasFormSimplificadoGetter.setQuery(txtQueryVC.getText());
+            sentenciasFormSimplificadoGetter.setQuery(txtQueryArea.getText());
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            sentenciasFormSimplificadoGetter.setQuery(txtQueryVC.getText());
+            sentenciasFormSimplificadoGetter.setQuery(txtQueryArea.getText());
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            sentenciasFormSimplificadoGetter.setQuery(txtQueryVC.getText());
+            sentenciasFormSimplificadoGetter.setQuery(txtQueryArea.getText());
         }
     });
+
+    // Crear un JScrollPane para el JTextArea
+    JScrollPane scrollPaneQuery = new JScrollPane(txtQueryArea);
+    scrollPaneQuery.setPreferredSize(new Dimension(300, 100));
 
     // Añadir lblQuery al formularioPanel
     gbc.gridx = 0;
@@ -1094,12 +1099,12 @@ public void activoFormSimplificado(JPanel panel)
     gbc.weighty = 0;
     formularioPanel.add(lblQuery, gbc);
 
-    // Añadir txtQueryVC al formularioPanel
+    // Añadir scrollPaneQuery (con el JTextArea dentro) al formularioPanel
     gbc.gridx = 1;
     gbc.gridy = 1;
     gbc.weightx = 1;
     gbc.weighty = 1;
-    formularioPanel.add(txtQueryVC, gbc);
+    formularioPanel.add(scrollPaneQuery, gbc);
 
     // Añadir formularioPanel al centro del panel principal
     panel.add(formularioPanel, BorderLayout.CENTER);
@@ -1108,6 +1113,7 @@ public void activoFormSimplificado(JPanel panel)
     panel.revalidate();
     panel.repaint();
 }
+
 
 
 
@@ -1181,7 +1187,7 @@ public void configuracionNodoRaiz(JPanel panel)
             {
                 JOptionPane.showMessageDialog(
                     panel,
-                    "Ha ocurrido un error al intentar guardar el nodo raiz.",
+                    "Ha ocurrido un error al intentar guardar el Nodo Raíz. Por favor, verifica la conexión con la base de datos y asegúrate de que la tabla 'nodoNombreRaiz' tenga la estructura correcta.",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
                 );
