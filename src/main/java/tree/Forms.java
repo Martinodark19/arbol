@@ -402,24 +402,12 @@ public class Forms
         JLabel lblValorString = new JLabel("Valor String:");
         JTextField txtValorString = new JTextField(20);
         txtValorString.setText(informationVariablesToShow.get(3));
-        // Si se desea inicializar con algún valor de informationVariablesToShow, descomentar y ajustar el índice:
-        // txtValorString.setText(informationVariablesToShow.get(3)); // Ajustar el índice según corresponda.
-    
-        // Campo Tipo
+
+
+        // Campos del formulario
         JLabel lblTipoVC = new JLabel("Tipo:");
-        JTextField txtTipoVC = new JTextField();
-        txtTipoVC.setPreferredSize(new Dimension(300, 30));
-        txtTipoVC.setText(informationVariablesToShow.get(0));
-    
-        txtTipoVC.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
-                    e.consume();
-                    Toolkit.getDefaultToolkit().beep();
-                }
-            }
-        });
+        JComboBox<String> txtTipoVCombo = new JComboBox<>(new String[]{"Tipo 1", "Tipo 2", "Tipo 3", "Tipo 4", "Tipo 5"});
+        txtTipoVCombo.setSelectedItem(informationVariablesToShow.get(0));
     
         // Crear label y combo box para 'ActivoId'
         JLabel lblActivoId = new JLabel("ActivoId:");
@@ -491,7 +479,7 @@ public class Forms
     
         gbc.gridx = 1;
         gbc.gridy = 2;
-        formularioPanel.add(txtTipoVC, gbc);
+        formularioPanel.add(txtTipoVCombo, gbc);
     
         // Fila 3: ActivoId
         gbc.gridx = 0;
@@ -512,7 +500,7 @@ public class Forms
         // Acción del botón Guardar
         btnGuardar.addActionListener(e -> {
             System.out.println("Guardando Variables Contexto:");
-            String tipo = txtTipoVC.getText();
+            String tipo = (String) txtTipoVCombo.getSelectedItem();
             Integer activoId = (Integer) comboActivoId.getSelectedItem();
             String valorString = txtValorString.getText();
     
@@ -523,10 +511,9 @@ public class Forms
                 // Recargar los valores actualizados desde la base de datos
                 Map<Integer, String> updatedDetails = querys.getVariableDetails(nodoArbolId);
                 if (!updatedDetails.isEmpty()) {
-                    txtTipoVC.setText(updatedDetails.get(1));
+                    //txtTipoVC.setText(updatedDetails.get(1));
+                    txtTipoVCombo.setSelectedItem(updatedDetails.get(1));
                     comboActivoId.setSelectedItem(Integer.parseInt(updatedDetails.get(2)));
-                    // Aquí podrías actualizar txtValorString si también lo guardas en la BD
-                    // txtValorString.setText(updatedDetails.get(X)); // Ajustar índice
                 }
                 interfazPrincipal.reloadTreePanel();
                 interfazPrincipal.limpiarFormPanel();
@@ -902,23 +889,16 @@ public void VariablesContextoFormSimplificado(JPanel panel)
 
     // Campos del formulario
     JLabel lblTipoVC = new JLabel("Tipo:");
-    JTextField txtTipoVC = new JTextField(20);
 
-    // Listener para actualizar el getter al escribir en txtTipoVC
-    txtTipoVC.addKeyListener(new KeyAdapter() {
-        @Override
-        public void keyReleased(KeyEvent e) {
-            variablesContextoSimplificadoGetter.setTipoVC(txtTipoVC.getText());
-        }
+    JComboBox<String> txtTipoVCombo = new JComboBox<>(new String[]{"Tipo 1", "Tipo 2", "Tipo 3", "Tipo 4", "Tipo 5"});
 
-        @Override
-        public void keyTyped(KeyEvent e) {
-            if (txtTipoVC.getText().length() >= 30) { // Máximo 30 caracteres
-                e.consume();
-                Toolkit.getDefaultToolkit().beep();
-            }
-        }
+
+    // Registrar ActionListeners para detectar cambios en los JComboBox
+    txtTipoVCombo.addActionListener(e -> {
+        String selectedTipo = (String) txtTipoVCombo.getSelectedItem();
+        variablesContextoSimplificadoGetter.setTipoVC(selectedTipo);
     });
+
 
     // Nuevo campo valorString (debajo de Tipo)
     JLabel lblValorString = new JLabel("Valor String:");
@@ -963,7 +943,7 @@ public void VariablesContextoFormSimplificado(JPanel panel)
         comboActivoId.setSelectedItem(-1);
         comboActivoId.setEnabled(false); // Deshabilitar para evitar interacciones
         // Deshabilitar el campo de texto
-        txtTipoVC.setEnabled(false);
+        txtTipoVCombo.setEnabled(false);
 
         variablesContextoSimplificadoGetter.setDisponibilidadForm(false);
     }
@@ -993,7 +973,7 @@ public void VariablesContextoFormSimplificado(JPanel panel)
     formularioPanel.add(lblTipoVC, gbc);
 
     gbc.gridx = 1;
-    formularioPanel.add(txtTipoVC, gbc);
+    formularioPanel.add(txtTipoVCombo, gbc);
 
     // Fila 1: Valor String
     gbc.gridx = 0;
